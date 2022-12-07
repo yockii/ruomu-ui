@@ -3,6 +3,12 @@ package main
 import (
 	"github.com/yockii/ruomu-core/config"
 	"github.com/yockii/ruomu-core/database"
+	"github.com/yockii/ruomu-core/shared"
+	"github.com/yockii/ruomu-core/util"
+	"github.com/yockii/ruomu-uc/constant"
+
+	"github.com/yockii/ruomu-ui/controller"
+	"github.com/yockii/ruomu-ui/model"
 )
 
 type UiCore struct{}
@@ -13,17 +19,19 @@ func (UiCore) Initial(params map[string]string) error {
 	}
 
 	database.Initial()
-	//TODO 同步表结构
-	database.DB.Sync2()
+	// 同步表结构
+	database.DB.Sync2(model.Menu{}, model.Page{})
 
 	//TODO 初始化页面
 
 	return nil
 }
 func (UiCore) InjectCall(code string, headers map[string]string, value []byte) ([]byte, error) {
-	// TODO 注入点调用
-	return nil, nil
+	return controller.Dispatch(code, headers, value)
 }
 func main() {
+	util.InitNode(1)
+	defer database.Close()
 
+	shared.ModuleServe(constant.ModuleName, &UiCore{})
 }

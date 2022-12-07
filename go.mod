@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/sirupsen/logrus v1.9.0
-	github.com/yockii/ruomu-core v0.0.0-20221123081216-186695d7bd63
+	github.com/yockii/ruomu-core v0.0.0-20221206054034-85d1619e844b
 	github.com/yockii/ruomu-uc v0.0.0-20221125092645-779ec28c3520
 )
 
