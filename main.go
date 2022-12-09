@@ -29,8 +29,14 @@ func (UiCore) Initial(params map[string]string) error {
 func (UiCore) InjectCall(code string, headers map[string]string, value []byte) ([]byte, error) {
 	return controller.Dispatch(code, headers, value)
 }
-func main() {
+
+func init() {
+	config.Set("moduleName", constant.ModuleName)
+	config.Set("logger.level", "debug")
+	config.InitialLogger()
 	util.InitNode(1)
+}
+func main() {
 	defer database.Close()
 
 	shared.ModuleServe(constant.ModuleName, &UiCore{})
