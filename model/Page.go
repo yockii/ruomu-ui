@@ -1,6 +1,10 @@
 package model
 
-import "github.com/yockii/ruomu-core/database"
+import (
+	"github.com/tidwall/gjson"
+
+	"github.com/yockii/ruomu-core/database"
+)
 
 type Page struct {
 	Id         int64             `json:"id,omitempty" xorm:"pk"`
@@ -12,6 +16,17 @@ type Page struct {
 	CreateTime database.DateTime `json:"createTime" xorm:"created"`
 }
 
-func (_ Page) TableComment() string {
+func (p Page) TableComment() string {
 	return "页面配置表"
+}
+func (p *Page) UnmarshalJSON(b []byte) error {
+	j := gjson.ParseBytes(b)
+	p.Id = j.Get("id").Int()
+	p.PageName = j.Get("pageName").String()
+	p.PageCode = j.Get("pageCode").String()
+	p.ThemeCode = j.Get("themeCode").String()
+	p.PageRoute = j.Get("pageRoute").String()
+	p.PageConfig = j.Get("pageConfig").String()
+
+	return nil
 }
