@@ -33,7 +33,8 @@ func (_ *menuController) Add(value []byte) (any, error) {
 		}, nil
 	}
 
-	if c, err := database.DB.Count(&model.Menu{Code: instance.Code}); err != nil {
+	var c int64
+	if err := database.DB.Model(&model.Menu{}).Where(&model.Menu{Code: instance.Code}).Count(&c).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -46,8 +47,8 @@ func (_ *menuController) Add(value []byte) (any, error) {
 		}, nil
 	}
 
-	instance.Id = util.SnowflakeId()
-	if _, err := database.DB.Insert(instance); err != nil {
+	instance.ID = util.SnowflakeId()
+	if err := database.DB.Create(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -69,20 +70,20 @@ func (_ *menuController) Update(value []byte) (any, error) {
 		}, nil
 	}
 	// 处理必填
-	if instance.Id == 0 {
+	if instance.ID == 0 {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
 			Msg:  server.ResponseMsgParamNotEnough + " id",
 		}, nil
 	}
 
-	if _, err := database.DB.Update(&model.Menu{
-		ParentId: instance.ParentId,
+	if err := database.DB.Model(&model.Menu{ID: instance.ID}).Updates(&model.Menu{
+		ParentID: instance.ParentID,
 		Name:     instance.Name,
 		Code:     instance.Code,
 		Icon:     instance.Icon,
 		PageCode: instance.PageCode,
-	}, &model.Menu{Id: instance.Id}); err != nil {
+	}).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -104,14 +105,14 @@ func (_ *menuController) Delete(value []byte) (any, error) {
 		}, nil
 	}
 	// 处理必填
-	if instance.Id == 0 {
+	if instance.ID == 0 {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
 			Msg:  server.ResponseMsgParamNotEnough + " id",
 		}, nil
 	}
 
-	if _, err := database.DB.Delete(instance); err != nil {
+	if err := database.DB.Where(instance).Delete(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -144,31 +145,32 @@ func (_ *menuController) List(value []byte) (any, error) {
 		paginate.Limit = 10
 	}
 
-	session := database.DB.NewSession().Limit(paginate.Limit, paginate.Offset)
+	tx := database.DB.Limit(paginate.Limit).Offset(paginate.Offset)
 
 	condition := &model.Menu{
-		Id:       instance.Id,
-		ParentId: instance.ParentId,
+		ID:       instance.ID,
+		ParentID: instance.ParentID,
 		Name:     "",
 		Code:     "",
 		Icon:     "",
 		PageCode: "",
 	}
 	if instance.Name != "" {
-		session.Where("name like ?", "%"+instance.Name+"%")
+		tx.Where("name like ?", "%"+instance.Name+"%")
 		instance.Name = ""
 	}
 	if instance.Code != "" {
-		session.Where("code like ?", "%"+instance.Code+"%")
+		tx.Where("code like ?", "%"+instance.Code+"%")
 		instance.Code = ""
 	}
 	if instance.PageCode != "" {
-		session.Where("page_code like ?", "%"+instance.PageCode+"%")
+		tx.Where("page_code like ?", "%"+instance.PageCode+"%")
 		instance.PageCode = ""
 	}
 
 	var list []*model.Menu
-	total, err := session.FindAndCount(&list, condition)
+	var total int64
+	err := tx.Find(&list, condition).Offset(-1).Count(&total).Error
 	if err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{

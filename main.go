@@ -20,7 +20,9 @@ func (UiCore) Initial(params map[string]string) error {
 
 	database.Initial()
 	// 同步表结构
-	database.DB.Sync2(model.Menu{}, model.Page{})
+	database.DB.AutoMigrate(model.Menu{}, model.Page{})
+
+	util.InitNode(1)
 
 	//TODO 初始化页面
 
@@ -34,7 +36,6 @@ func init() {
 	config.Set("moduleName", constant.ModuleName)
 	config.Set("logger.level", "debug")
 	config.InitialLogger()
-	util.InitNode(1)
 }
 func main() {
 	defer database.Close()

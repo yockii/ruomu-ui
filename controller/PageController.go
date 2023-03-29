@@ -3,10 +3,12 @@ package controller
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/server"
 	"github.com/yockii/ruomu-core/util"
+	"gorm.io/gorm"
 
 	"github.com/yockii/ruomu-ui/model"
 )
@@ -33,7 +35,8 @@ func (_ *pageController) Add(value []byte) (any, error) {
 		}, nil
 	}
 
-	if c, err := database.DB.Count(&model.Page{PageCode: instance.PageCode}); err != nil {
+	var c int64
+	if err := database.DB.Model(&model.Page{}).Where(&model.Page{PageCode: instance.PageCode}).Count(&c).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -46,8 +49,8 @@ func (_ *pageController) Add(value []byte) (any, error) {
 		}, nil
 	}
 
-	instance.Id = util.SnowflakeId()
-	if _, err := database.DB.Insert(instance); err != nil {
+	instance.ID = util.SnowflakeId()
+	if err := database.DB.Create(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -69,20 +72,20 @@ func (_ *pageController) Update(value []byte) (any, error) {
 		}, nil
 	}
 	// 处理必填
-	if instance.Id == 0 {
+	if instance.ID == 0 {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
 			Msg:  server.ResponseMsgParamNotEnough + " id",
 		}, nil
 	}
 
-	if _, err := database.DB.Update(&model.Page{
+	if err := database.DB.Model(&model.Page{ID: instance.ID}).Updates(&model.Page{
 		PageName:   instance.PageName,
 		PageCode:   instance.PageCode,
 		ThemeCode:  instance.ThemeCode,
 		PageRoute:  instance.PageRoute,
 		PageConfig: instance.PageConfig,
-	}, &model.Page{Id: instance.Id}); err != nil {
+	}).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -104,14 +107,14 @@ func (_ *pageController) Delete(value []byte) (any, error) {
 		}, nil
 	}
 	// 处理必填
-	if instance.Id == 0 {
+	if instance.ID == 0 {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
 			Msg:  server.ResponseMsgParamNotEnough + " id",
 		}, nil
 	}
 
-	if _, err := database.DB.Delete(instance); err != nil {
+	if err := database.DB.Where(instance).Delete(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -144,30 +147,31 @@ func (_ *pageController) List(value []byte) (any, error) {
 		paginate.Limit = 10
 	}
 
-	session := database.DB.NewSession().Limit(paginate.Limit, paginate.Offset)
+	tx := database.DB.Limit(paginate.Limit).Offset(paginate.Offset)
 
 	condition := &model.Page{
-		Id: instance.Id,
+		ID: instance.ID,
 	}
 	if instance.PageName != "" {
-		session.Where("page_name like ?", "%"+instance.PageName+"%")
+		tx.Where("page_name like ?", "%"+instance.PageName+"%")
 		instance.PageName = ""
 	}
 	if instance.PageCode != "" {
-		session.Where("page_code like ?", "%"+instance.PageCode+"%")
+		tx.Where("page_code like ?", "%"+instance.PageCode+"%")
 		instance.PageCode = ""
 	}
 	if instance.ThemeCode != "" {
-		session.Where("theme_code like ?", "%"+instance.ThemeCode+"%")
+		tx.Where("theme_code like ?", "%"+instance.ThemeCode+"%")
 		instance.ThemeCode = ""
 	}
 	if instance.PageRoute != "" {
-		session.Where("page_route like ?", "%"+instance.PageRoute+"%")
+		tx.Where("page_route like ?", "%"+instance.PageRoute+"%")
 		instance.PageRoute = ""
 	}
 
 	var list []*model.Page
-	total, err := session.Omit("page_config").FindAndCount(&list, condition)
+	var total int64
+	err := tx.Omit("page_config").Find(&list, condition).Offset(-1).Count(&total).Error
 	if err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -186,23 +190,23 @@ func (_ *pageController) List(value []byte) (any, error) {
 }
 
 func (_ *pageController) Instance(value []byte) (any, error) {
-	condition := new(model.Page)
-	if err := json.Unmarshal(value, condition); err != nil {
+	instance := new(model.Page)
+	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamParseError,
 			Msg:  server.ResponseMsgParamParseError,
 		}, nil
 	}
-	instance := new(model.Page)
-	if has, err := database.DB.Get(instance); err != nil {
+	if err := database.DB.Where(instance).Take(instance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &server.CommonResponse{}, nil
+		}
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
 			Msg:  server.ResponseMsgDatabase + err.Error(),
 		}, nil
-	} else if !has {
-		return &server.CommonResponse{}, nil
 	}
 	return &server.CommonResponse{
 		Data: instance,
