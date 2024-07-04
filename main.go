@@ -5,8 +5,7 @@ import (
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/shared"
 	"github.com/yockii/ruomu-core/util"
-	"github.com/yockii/ruomu-uc/constant"
-
+	"github.com/yockii/ruomu-ui/constant"
 	"github.com/yockii/ruomu-ui/controller"
 	"github.com/yockii/ruomu-ui/model"
 )
@@ -20,15 +19,15 @@ func (UiCore) Initial(params map[string]string) error {
 
 	database.Initial()
 	// 同步表结构
-	database.DB.AutoMigrate(model.Menu{}, model.Page{})
+	_ = database.DB.AutoMigrate(&model.Menu{}, &model.Page{})
 
-	util.InitNode(1)
+	_ = util.InitNode(1)
 
 	//TODO 初始化页面
 
 	return nil
 }
-func (UiCore) InjectCall(code string, headers map[string]string, value []byte) ([]byte, error) {
+func (UiCore) InjectCall(code string, headers map[string][]string, value []byte) ([]byte, error) {
 	return controller.Dispatch(code, headers, value)
 }
 

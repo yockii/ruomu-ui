@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 
-	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/server"

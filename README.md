@@ -96,4 +96,4 @@ POST /module/add
 
 
 
-[//]: # (goreleaser release --skip-publish --rm-dist --snapshot)
+[//]: # (goreleaser release --skip-publish --clean --snapshot)
