@@ -2,21 +2,22 @@ package controller
 
 import (
 	"encoding/json"
-
+	"errors"
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/server"
 	"github.com/yockii/ruomu-core/util"
+	"gorm.io/gorm"
 
 	"github.com/yockii/ruomu-ui/model"
 )
 
-var MenuController = new(menuController)
+var MaterialComponentController = new(materialComponentController)
 
-type menuController struct{}
+type materialComponentController struct{}
 
-func (_ *menuController) Add(value []byte) (any, error) {
-	instance := new(model.Menu)
+func (_ *materialComponentController) Add(value []byte) (any, error) {
+	instance := new(model.MaterialComponent)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -26,15 +27,15 @@ func (_ *menuController) Add(value []byte) (any, error) {
 	}
 
 	// 处理必填
-	if instance.Name == "" || instance.Code == "" {
+	if instance.Name == "" || instance.LibID == 0 || instance.GroupID == 0 {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
-			Msg:  server.ResponseMsgParamNotEnough + " name / code",
+			Msg:  server.ResponseMsgParamNotEnough + " name / lib id / group id",
 		}, nil
 	}
 
 	var c int64
-	if err := database.DB.Model(&model.Menu{}).Where(&model.Menu{Code: instance.Code}).Count(&c).Error; err != nil {
+	if err := database.DB.Model(&model.MaterialComponent{}).Where(&model.MaterialComponent{LibID: instance.LibID, Name: instance.Name}).Count(&c).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -60,8 +61,8 @@ func (_ *menuController) Add(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *menuController) Update(value []byte) (any, error) {
-	instance := new(model.Menu)
+func (_ *materialComponentController) Update(value []byte) (any, error) {
+	instance := new(model.MaterialComponent)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -77,12 +78,14 @@ func (_ *menuController) Update(value []byte) (any, error) {
 		}, nil
 	}
 
-	if err := database.DB.Model(&model.Menu{ID: instance.ID}).Updates(&model.Menu{
-		ParentID: instance.ParentID,
-		Name:     instance.Name,
-		Code:     instance.Code,
-		Icon:     instance.Icon,
-		PageCode: instance.PageCode,
+	if err := database.DB.Model(&model.MaterialComponent{ID: instance.ID}).Updates(&model.MaterialComponent{
+		LibID:       instance.LibID,
+		GroupID:     instance.GroupID,
+		Name:        instance.Name,
+		Description: instance.Description,
+		TagName:     instance.TagName,
+		Thumbnail:   instance.Thumbnail,
+		Schema:      instance.Schema,
 	}).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -95,8 +98,8 @@ func (_ *menuController) Update(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *menuController) Delete(value []byte) (any, error) {
-	instance := new(model.Menu)
+func (_ *materialComponentController) Delete(value []byte) (any, error) {
+	instance := new(model.MaterialComponent)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -124,8 +127,8 @@ func (_ *menuController) Delete(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *menuController) List(value []byte) (any, error) {
-	instance := new(model.Menu)
+func (_ *materialComponentController) List(value []byte) (any, error) {
+	instance := new(model.MaterialComponent)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -147,30 +150,23 @@ func (_ *menuController) List(value []byte) (any, error) {
 
 	tx := database.DB.Limit(paginate.Limit).Offset(paginate.Offset)
 
-	condition := &model.Menu{
-		ID:       instance.ID,
-		ParentID: instance.ParentID,
-		Name:     "",
-		Code:     "",
-		Icon:     "",
-		PageCode: "",
+	condition := &model.MaterialComponent{
+		ID:      instance.ID,
+		LibID:   instance.LibID,
+		GroupID: instance.GroupID,
 	}
 	if instance.Name != "" {
 		tx.Where("name like ?", "%"+instance.Name+"%")
 		instance.Name = ""
 	}
-	if instance.Code != "" {
-		tx.Where("code like ?", "%"+instance.Code+"%")
-		instance.Code = ""
-	}
-	if instance.PageCode != "" {
-		tx.Where("page_code like ?", "%"+instance.PageCode+"%")
-		instance.PageCode = ""
+	if instance.TagName != "" {
+		tx.Where("tag_name like ?", "%"+instance.TagName+"%")
+		instance.TagName = ""
 	}
 
-	var list []*model.Menu
+	var list []*model.MaterialComponent
 	var total int64
-	err := tx.Find(&list, condition).Offset(-1).Count(&total).Error
+	err := tx.Omit("schema").Find(&list, condition).Offset(-1).Count(&total).Error
 	if err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -185,5 +181,29 @@ func (_ *menuController) List(value []byte) (any, error) {
 			Limit:  paginate.Limit,
 			Items:  list,
 		},
+	}, nil
+}
+
+func (_ *materialComponentController) Instance(value []byte) (any, error) {
+	instance := new(model.MaterialComponent)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+	if err := database.DB.Where(instance).Take(instance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &server.CommonResponse{}, nil
+		}
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+	return &server.CommonResponse{
+		Data: instance,
 	}, nil
 }

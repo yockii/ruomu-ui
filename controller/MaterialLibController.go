@@ -3,8 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"github.com/tidwall/gjson"
-
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/server"
@@ -14,12 +12,12 @@ import (
 	"github.com/yockii/ruomu-ui/model"
 )
 
-var PageController = new(pageController)
+var MaterialLibController = new(materialLibController)
 
-type pageController struct{}
+type materialLibController struct{}
 
-func (_ *pageController) Add(value []byte) (any, error) {
-	instance := new(model.Page)
+func (_ *materialLibController) Add(value []byte) (any, error) {
+	instance := new(model.MaterialLib)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -29,15 +27,15 @@ func (_ *pageController) Add(value []byte) (any, error) {
 	}
 
 	// 处理必填
-	if instance.Name == "" || instance.ProjectID == 0 {
+	if instance.Name == "" || instance.Code == "" {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
-			Msg:  server.ResponseMsgParamNotEnough + " name / project id",
+			Msg:  server.ResponseMsgParamNotEnough + " name / code",
 		}, nil
 	}
 
 	var c int64
-	if err := database.DB.Model(&model.Page{}).Where(&model.Page{ProjectID: instance.ProjectID, Route: instance.Route}).Count(&c).Error; err != nil {
+	if err := database.DB.Model(&model.MaterialLib{}).Where(&model.MaterialLib{Code: instance.Code}).Count(&c).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
 			Code: server.ResponseCodeDatabase,
@@ -63,8 +61,8 @@ func (_ *pageController) Add(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *pageController) Update(value []byte) (any, error) {
-	instance := new(model.Page)
+func (_ *materialLibController) Update(value []byte) (any, error) {
+	instance := new(model.MaterialLib)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -80,12 +78,14 @@ func (_ *pageController) Update(value []byte) (any, error) {
 		}, nil
 	}
 
-	if err := database.DB.Model(&model.Page{ID: instance.ID}).Updates(&model.Page{
-		ProjectID: instance.ProjectID,
-		Name:      instance.Name,
-		ParentID:  instance.ParentID,
-		Route:     instance.Route,
-		Schema:    instance.Schema,
+	if err := database.DB.Model(&model.MaterialLib{ID: instance.ID}).Updates(&model.MaterialLib{
+		Code:            instance.Code,
+		Name:            instance.Name,
+		Description:     instance.Description,
+		ThumbnailUrl:    instance.ThumbnailUrl,
+		Website:         instance.Website,
+		PackageName:     instance.PackageName,
+		ActiveVersionID: instance.ActiveVersionID,
 	}).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -98,8 +98,8 @@ func (_ *pageController) Update(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *pageController) Delete(value []byte) (any, error) {
-	instance := new(model.Page)
+func (_ *materialLibController) Delete(value []byte) (any, error) {
+	instance := new(model.MaterialLib)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -127,8 +127,8 @@ func (_ *pageController) Delete(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *pageController) List(value []byte) (any, error) {
-	instance := new(model.Page)
+func (_ *materialLibController) List(value []byte) (any, error) {
+	instance := new(model.MaterialLib)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -150,23 +150,26 @@ func (_ *pageController) List(value []byte) (any, error) {
 
 	tx := database.DB.Limit(paginate.Limit).Offset(paginate.Offset)
 
-	condition := &model.Page{
-		ID:        instance.ID,
-		ProjectID: instance.ProjectID,
-		ParentID:  instance.ParentID,
+	condition := &model.MaterialLib{
+		ID:              instance.ID,
+		ActiveVersionID: instance.ActiveVersionID,
+	}
+	if instance.Code != "" {
+		tx.Where("code like ?", "%"+instance.Code+"%")
+		instance.Code = ""
 	}
 	if instance.Name != "" {
 		tx.Where("name like ?", "%"+instance.Name+"%")
 		instance.Name = ""
 	}
-	if instance.Route != "" {
-		tx.Where("route like ?", "%"+instance.Route+"%")
-		instance.Route = ""
+	if instance.PackageName != "" {
+		tx.Where("package_name like ?", "%"+instance.PackageName+"%")
+		instance.PackageName = ""
 	}
 
-	var list []*model.Page
+	var list []*model.MaterialLib
 	var total int64
-	err := tx.Omit("schema").Find(&list, condition).Offset(-1).Count(&total).Error
+	err := tx.Find(&list, condition).Offset(-1).Count(&total).Error
 	if err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -184,8 +187,8 @@ func (_ *pageController) List(value []byte) (any, error) {
 	}, nil
 }
 
-func (_ *pageController) Instance(value []byte) (any, error) {
-	instance := new(model.Page)
+func (_ *materialLibController) Instance(value []byte) (any, error) {
+	instance := new(model.MaterialLib)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -205,32 +208,5 @@ func (_ *pageController) Instance(value []byte) (any, error) {
 	}
 	return &server.CommonResponse{
 		Data: instance,
-	}, nil
-}
-
-func (_ *pageController) Schema(value []byte) (any, error) {
-	instance := new(model.Page)
-	if err := json.Unmarshal(value, instance); err != nil {
-		logger.Errorln(err)
-		return &server.CommonResponse{
-			Code: server.ResponseCodeParamParseError,
-			Msg:  server.ResponseMsgParamParseError,
-		}, nil
-	}
-	if err := database.DB.Where(instance).Take(instance).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return &server.CommonResponse{}, nil
-		}
-		logger.Errorln(err)
-		return &server.CommonResponse{
-			Code: server.ResponseCodeDatabase,
-			Msg:  server.ResponseMsgDatabase + err.Error(),
-		}, nil
-	}
-
-	j := gjson.Parse(instance.Schema)
-
-	return &server.CommonResponse{
-		Data: j.Map(),
 	}, nil
 }

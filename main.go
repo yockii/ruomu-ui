@@ -10,7 +10,9 @@ import (
 	"github.com/yockii/ruomu-ui/model"
 )
 
-type UiCore struct{}
+type UiCore struct {
+	shared.UnimplementedCommunicateServer
+}
 
 func (UiCore) Initial(params map[string]string) error {
 	for key, value := range params {
@@ -19,7 +21,15 @@ func (UiCore) Initial(params map[string]string) error {
 
 	database.Initial()
 	// 同步表结构
-	_ = database.DB.AutoMigrate(&model.Menu{}, &model.Page{})
+	_ = database.DB.AutoMigrate(
+		&model.Project{},
+		&model.Page{},
+		&model.MaterialLib{},
+		&model.MaterialLibVersion{},
+		&model.MaterialComponent{},
+		&model.MaterialComponentGroup{},
+		&model.MaterialComponentVersion{},
+	)
 
 	_ = util.InitNode(1)
 

@@ -7,14 +7,14 @@ import (
 )
 
 type Page struct {
-	ID            uint64            `json:"id,omitempty,string" gorm:"primaryKey"`
-	PageName      string            `json:"pageName,omitempty" gorm:"comment:'页面名称'"`
-	PageCode      string            `json:"pageCode,omitempty" gorm:"comment:'页面代码'"`
-	ThemeCode     string            `json:"themeCode,omitempty" gorm:"default:'default';comment:'适用主题代码'"` // 默认使用default
-	PageRoute     string            `json:"pageRoute,omitempty" gorm:"comment:'页面路由路径'"`
-	PageConfig    string            `json:"pageConfig,omitempty" gorm:"type:text;comment:'页面配置'"`
-	AuthorizeCode string            `json:"authorizeCode,omitempty" gorm:"comment:'授权代码，不需要权限则留空或设为anon'"`
-	CreateTime    database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID        uint64 `json:"id,omitempty,string" gorm:"primaryKey"`
+	ProjectID uint64 `json:"projectId,omitempty,string" gorm:"comment:'项目ID'"`
+	Name      string `json:"name,omitempty" gorm:"size:50;comment:'页面名称'"`
+	ParentID  uint64 `json:"parentId,omitempty,string" gorm:"comment:'父页面ID'"`
+	Route     string `json:"route,omitempty" gorm:"size:50;comment:'页面路由'"`
+	Schema    string `json:"schema,omitempty" gorm:"text;comment:'页面配置'"`
+
+	CreateTime database.DateTime `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (p *Page) TableComment() string {
@@ -24,11 +24,11 @@ func (p *Page) TableComment() string {
 func (p *Page) UnmarshalJSON(b []byte) error {
 	j := gjson.ParseBytes(b)
 	p.ID = j.Get("id").Uint()
-	p.PageName = j.Get("pageName").String()
-	p.PageCode = j.Get("pageCode").String()
-	p.ThemeCode = j.Get("themeCode").String()
-	p.PageRoute = j.Get("pageRoute").String()
-	p.PageConfig = j.Get("pageConfig").String()
+	p.ProjectID = j.Get("projectId").Uint()
+	p.Name = j.Get("name").String()
+	p.ParentID = j.Get("parentId").Uint()
+	p.Route = j.Get("route").String()
+	p.Schema = j.Get("schema").String()
 
 	return nil
 }

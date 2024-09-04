@@ -12,15 +12,30 @@ ui
 ## 模块注入点
 | 代码             | 注入类型        | 说明    |
 |----------------|-------------|-------|
-| /menu/add      | HTTP-POST   | 新增菜单  |
-| /menu/update   | HTTP-PUT    | 修改菜单  |
-| /menu/delete   | HTTP-DELETE | 删除菜单  |
-| /menu/list     | HTTP-GET    | 菜单列表  |
+| /project/add   | HTTP-POST   | 新增项目  |
+| /project/update   | HTTP-PUT    | 修改项目  |
+| /project/delete   | HTTP-DELETE | 删除项目  |
+| /project/list     | HTTP-GET    | 项目列表  |
 | /page/add      | HTTP-POST   | 新增页面  |
 | /page/update   | HTTP-PUT    | 修改页面  |
 | /page/delete   | HTTP-DELETE | 删除页面  |
 | /page/list     | HTTP-GET    | 页面列表  |
-| /page/instance | HTTP-GET    | 单页面详情 |
+| /page/instance | HTTP-GET    | 页面详情  |
+| /materialLib/add | HTTP-POST   | 新增物料库 |
+| /materialLib/update | HTTP-PUT    | 修改物料库 |
+| /materialLib/delete | HTTP-DELETE | 删除物料库 |
+| /materialLib/list | HTTP-GET    | 物料库列表 |
+| /materialLib/instance | HTTP-GET    | 物料库详情 |
+| /materialComponentGroup/add | HTTP-POST   | 新增物料组件分组 |
+| /materialComponentGroup/update | HTTP-PUT    | 修改物料组件分组 |
+| /materialComponentGroup/delete | HTTP-DELETE | 删除物料组件分组 |
+| /materialComponentGroup/list | HTTP-GET    | 物料组件分组列表 |
+| /materialComponentGroup/instance | HTTP-GET    | 物料组件分组详情 |
+| /materialComponent/add | HTTP-POST   | 新增物料组件 |
+| /materialComponent/update | HTTP-PUT    | 修改物料组件 |
+| /materialComponent/delete | HTTP-DELETE | 删除物料组件 |
+| /materialComponent/list | HTTP-GET    | 物料组件列表 |
+| /materialComponent/instance | HTTP-GET    | 物料组件详情 |
 
 
 
@@ -37,28 +52,28 @@ POST /module/add
     "dependencies": [],
     "injects": [
         {
-            "name": "新增菜单",
+            "name": "新增项目",
             "type": 2,
-            "injectCode": "/menu/add",
-            "authorizationCode": "menu:add"
+            "injectCode": "/project/add",
+            "authorizationCode": "project:add"
         },
         {
-            "name": "修改菜单",
+            "name": "修改项目",
             "type": 3,
-            "injectCode": "/menu/update",
-            "authorizationCode": "menu:update"
+            "injectCode": "/project/update",
+            "authorizationCode": "project:update"
         },
         {
-            "name": "删除菜单",
+            "name": "删除项目",
             "type": 4,
-            "injectCode": "/menu/delete",
-            "authorizationCode": "menu:delete"
+            "injectCode": "/project/delete",
+            "authorizationCode": "project:delete"
         },
         {
-            "name": "菜单列表",
+            "name": "项目列表",
             "type": 1,
-            "injectCode": "/menu/list",
-            "authorizationCode": "menu:list"
+            "injectCode": "/project/list",
+            "authorizationCode": "project:list"
         },
         {
             "name": "新增页面",
@@ -89,7 +104,97 @@ POST /module/add
           "type": 1,
           "injectCode": "/page/instance",
           "authorizationCode": "page:instance"
-        }
+        },
+        {
+          "name": "新增物料库",
+          "type": 2,
+          "injectCode": "/materialLib/add",
+          "authorizationCode": "materialLib:add"
+        },
+        {
+          "name": "修改物料库",
+          "type": 3,
+          "injectCode": "/materialLib/update",
+          "authorizationCode": "materialLib:update"
+        },
+      {
+        "name": "删除物料库",
+        "type": 4,
+        "injectCode": "/materialLib/delete",
+        "authorizationCode": "materialLib:delete"
+      },
+      {
+        "name": "物料库列表",
+        "type": 1,
+        "injectCode": "/materialLib/list",
+        "authorizationCode": "materialLib:list"
+      },
+      {
+        "name": "物料库详情",
+        "type": 1,
+        "injectCode": "/materialLib/instance",
+        "authorizationCode": "materialLib:instance"
+      },
+      {
+        "name": "新增物料组件分组",
+        "type": 2,
+        "injectCode": "/materialComponentGroup/add",
+        "authorizationCode": "materialComponentGroup:add"
+      },
+      {
+        "name": "修改物料组件分组",
+        "type": 3,
+        "injectCode": "/materialComponentGroup/update",
+        "authorizationCode": "materialComponentGroup:update"
+      },
+      {
+        "name": "删除物料组件分组",
+        "type": 4,
+        "injectCode": "/materialComponentGroup/delete",
+        "authorizationCode": "materialComponentGroup:delete"
+      },
+      {
+        "name": "物料组件分组列表",
+        "type": 1,
+        "injectCode": "/materialComponentGroup/list",
+        "authorizationCode": "materialComponentGroup:list"
+      },
+      {
+        "name": "物料组件分组详情",
+        "type": 1,
+        "injectCode": "/materialComponentGroup/instance",
+        "authorizationCode": "materialComponentGroup:instance"
+      },
+      {
+        "name": "新增物料组件",
+        "type": 2,
+        "injectCode": "/materialComponent/add",
+        "authorizationCode": "materialComponent:add"
+      },
+      {
+        "name": "修改物料组件",
+        "type": 3,
+        "injectCode": "/materialComponent/update",
+        "authorizationCode": "materialComponent:update"
+      },
+      {
+        "name": "删除物料组件",
+        "type": 4,
+        "injectCode": "/materialComponent/delete",
+        "authorizationCode": "materialComponent:delete"
+      },
+      {
+        "name": "物料组件列表",
+        "type": 1,
+        "injectCode": "/materialComponent/list",
+        "authorizationCode": "materialComponent:list"
+      },
+      {
+        "name": "物料组件详情",
+        "type": 1,
+        "injectCode": "/materialComponent/instance",
+        "authorizationCode": "materialComponent:instance"
+      }
     ]
 }
 ```
