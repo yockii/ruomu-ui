@@ -28,3 +28,25 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 
 	return nil
 }
+
+type ProjectMaterialLibVersion struct {
+	ID           uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	ProjectID    uint64            `json:"projectId,omitempty,string" gorm:"index;comment:'项目ID'"`
+	LibID        uint64            `json:"libId,omitempty,string" gorm:"index;comment:'物料库ID'"`
+	LibVersionID uint64            `json:"libVersionId,omitempty,string" gorm:"index;comment:'物料库版本ID'"`
+	CreateTime   database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+}
+
+func (p *ProjectMaterialLibVersion) TableComment() string {
+	return "项目物料库版本表"
+}
+
+func (p *ProjectMaterialLibVersion) UnmarshalJSON(b []byte) error {
+	j := gjson.ParseBytes(b)
+	p.ID = j.Get("id").Uint()
+	p.ProjectID = j.Get("projectId").Uint()
+	p.LibID = j.Get("libId").Uint()
+	p.LibVersionID = j.Get("libVersionId").Uint()
+
+	return nil
+}

@@ -29,11 +29,10 @@ func (UiCore) Initial(params map[string]string) error {
 		&model.MaterialComponent{},
 		&model.MaterialComponentGroup{},
 		&model.MaterialComponentVersion{},
+		&model.ProjectMaterialLibVersion{},
 	)
 
 	_ = util.InitNode(1)
-
-	//TODO 初始化页面
 
 	return nil
 }

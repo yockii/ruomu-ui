@@ -32,4 +32,9 @@ const (
 	InjectCodeMaterialComponentDelete   = "/materialComponent/delete"
 	InjectCodeMaterialComponentList     = "/materialComponent/list"
 	InjectCodeMaterialComponentInstance = "/materialComponent/instance"
+
+	InjectCodeProjectMaterialLibVersionAdd    = "/projectMaterialLibVersion/add"
+	InjectCodeProjectMaterialLibVersionUpdate = "/projectMaterialLibVersion/update"
+	InjectCodeProjectMaterialLibVersionDelete = "/projectMaterialLibVersion/delete"
+	InjectCodeProjectMaterialLibVersionList   = "/projectMaterialLibVersion/list"
 )

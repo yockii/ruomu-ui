@@ -10,32 +10,37 @@
 ui
 
 ## 模块注入点
-| 代码             | 注入类型        | 说明    |
-|----------------|-------------|-------|
-| /project/add   | HTTP-POST   | 新增项目  |
-| /project/update   | HTTP-PUT    | 修改项目  |
-| /project/delete   | HTTP-DELETE | 删除项目  |
-| /project/list     | HTTP-GET    | 项目列表  |
-| /page/add      | HTTP-POST   | 新增页面  |
-| /page/update   | HTTP-PUT    | 修改页面  |
-| /page/delete   | HTTP-DELETE | 删除页面  |
-| /page/list     | HTTP-GET    | 页面列表  |
-| /page/instance | HTTP-GET    | 页面详情  |
-| /materialLib/add | HTTP-POST   | 新增物料库 |
-| /materialLib/update | HTTP-PUT    | 修改物料库 |
-| /materialLib/delete | HTTP-DELETE | 删除物料库 |
-| /materialLib/list | HTTP-GET    | 物料库列表 |
-| /materialLib/instance | HTTP-GET    | 物料库详情 |
-| /materialComponentGroup/add | HTTP-POST   | 新增物料组件分组 |
-| /materialComponentGroup/update | HTTP-PUT    | 修改物料组件分组 |
-| /materialComponentGroup/delete | HTTP-DELETE | 删除物料组件分组 |
-| /materialComponentGroup/list | HTTP-GET    | 物料组件分组列表 |
-| /materialComponentGroup/instance | HTTP-GET    | 物料组件分组详情 |
-| /materialComponent/add | HTTP-POST   | 新增物料组件 |
-| /materialComponent/update | HTTP-PUT    | 修改物料组件 |
-| /materialComponent/delete | HTTP-DELETE | 删除物料组件 |
-| /materialComponent/list | HTTP-GET    | 物料组件列表 |
-| /materialComponent/instance | HTTP-GET    | 物料组件详情 |
+| 代码             | 注入类型        | 说明          |
+|----------------|-------------|-------------|
+| /project/add   | HTTP-POST   | 新增项目        |
+| /project/update   | HTTP-PUT    | 修改项目        |
+| /project/delete   | HTTP-DELETE | 删除项目        |
+| /project/list     | HTTP-GET    | 项目列表        |
+| /page/add      | HTTP-POST   | 新增页面        |
+| /page/update   | HTTP-PUT    | 修改页面        |
+| /page/delete   | HTTP-DELETE | 删除页面        |
+| /page/list     | HTTP-GET    | 页面列表        |
+| /page/instance | HTTP-GET    | 页面详情        |
+| /materialLib/add | HTTP-POST   | 新增物料库       |
+| /materialLib/update | HTTP-PUT    | 修改物料库       |
+| /materialLib/delete | HTTP-DELETE | 删除物料库       |
+| /materialLib/list | HTTP-GET    | 物料库列表       |
+| /materialLib/instance | HTTP-GET    | 物料库详情       |
+| /materialComponentGroup/add | HTTP-POST   | 新增物料组件分组    |
+| /materialComponentGroup/update | HTTP-PUT    | 修改物料组件分组    |
+| /materialComponentGroup/delete | HTTP-DELETE | 删除物料组件分组    |
+| /materialComponentGroup/list | HTTP-GET    | 物料组件分组列表    |
+| /materialComponentGroup/instance | HTTP-GET    | 物料组件分组详情    |
+| /materialComponent/add | HTTP-POST   | 新增物料组件      |
+| /materialComponent/update | HTTP-PUT    | 修改物料组件      |
+| /materialComponent/delete | HTTP-DELETE | 删除物料组件      |
+| /materialComponent/list | HTTP-GET    | 物料组件列表      |
+| /materialComponent/instance | HTTP-GET    | 物料组件详情      |
+| /projectMaterialLibVersion/add | HTTP-POST   | 新增项目关联物料库版本 |
+| /projectMaterialLibVersion/update | HTTP-PUT    | 修改项目关联物料库版本 |
+| /projectMaterialLibVersion/delete | HTTP-DELETE | 删除项目关联物料库版本 |
+| /projectMaterialLibVersion/list | HTTP-GET    | 项目关联物料库版本列表 |
+
 
 
 
@@ -194,6 +199,30 @@ POST /module/add
         "type": 1,
         "injectCode": "/materialComponent/instance",
         "authorizationCode": "materialComponent:instance"
+      },
+      {
+        "name": "新增项目关联物料库版本",
+        "type": 2,
+        "injectCode": "/projectMaterialLibVersion/add",
+        "authorizationCode": "projectMaterialLibVersion:add"
+      },
+      {
+        "name": "修改项目关联物料库版本",
+        "type": 3,
+        "injectCode": "/projectMaterialLibVersion/update",
+        "authorizationCode": "projectMaterialLibVersion:update"
+      },
+      {
+        "name": "删除项目关联物料库版本",
+        "type": 4,
+        "injectCode": "/projectMaterialLibVersion/delete",
+        "authorizationCode": "projectMaterialLibVersion:delete"
+      },
+      {
+        "name": "项目关联物料库版本列表",
+        "type": 1,
+        "injectCode": "/projectMaterialLibVersion/list",
+        "authorizationCode": "projectMaterialLibVersion:list"
       }
     ]
 }
