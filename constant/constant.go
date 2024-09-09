@@ -1,6 +1,7 @@
 package constant
 
-const ModuleName = "ui"
+const ModuleCode = "ui"
+const ModuleName = "界面中心"
 
 const (
 	InjectCodeProjectAdd    = "/project/add"
@@ -37,4 +38,9 @@ const (
 	InjectCodeProjectMaterialLibVersionUpdate = "/projectMaterialLibVersion/update"
 	InjectCodeProjectMaterialLibVersionDelete = "/projectMaterialLibVersion/delete"
 	InjectCodeProjectMaterialLibVersionList   = "/projectMaterialLibVersion/list"
+)
+
+// html 模板渲染
+const (
+	InjectCodeIndexHtml = "/canvas.html"
 )

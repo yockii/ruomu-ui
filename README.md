@@ -3,7 +3,11 @@
 
 提供基础界面管理、菜单管理
 
-依赖于 ruomu-core
+依赖于 ruomu-core及ruomu-module
+
+```
+注：views目录要放到 ruomu 执行的目录 /views 下，否则无法找到
+```
 
 # 注入信息
 ## 模块名称

@@ -1,13 +1,16 @@
 package main
 
 import (
+	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/config"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/shared"
 	"github.com/yockii/ruomu-core/util"
+	moduleModel "github.com/yockii/ruomu-module/model"
 	"github.com/yockii/ruomu-ui/constant"
 	"github.com/yockii/ruomu-ui/controller"
 	"github.com/yockii/ruomu-ui/model"
+	"os"
 )
 
 type UiCore struct {
@@ -41,12 +44,321 @@ func (UiCore) InjectCall(code string, headers map[string][]string, value []byte)
 }
 
 func init() {
-	config.Set("moduleName", constant.ModuleName)
+	config.AddConfigPath("../conf")
+	if err := config.DefaultInstance.ReadInConfig(); err != nil {
+		logger.Warnf("No config file: %s ", err)
+	}
+
+	config.Set("moduleName", constant.ModuleCode)
 	config.Set("logger.level", "debug")
 	config.InitialLogger()
 }
 func main() {
 	defer database.Close()
 
-	shared.ModuleServe(constant.ModuleName, &UiCore{})
+	// 如果微核调用启动，则启动服务监听 微核调用在cmd中带入 --mc 参数
+
+	// 检查是否有启动参数 --mc
+	args := os.Args
+	runningInMicroCore := false
+	for _, arg := range args {
+		if arg == "--mc" {
+			runningInMicroCore = true
+			break
+		}
+	}
+	if runningInMicroCore {
+		shared.ModuleServe(constant.ModuleCode, &UiCore{})
+	} else {
+		registerModule()
+		logger.Info("UI模块注册完成")
+	}
+}
+
+func registerModule() {
+	UiCore{}.Initial(map[string]string{})
+
+	// 直接写表数据即可
+	m := &moduleModel.Module{
+		Name: constant.ModuleName,
+	}
+	database.DB.Where(&moduleModel.Module{
+		Code: constant.ModuleCode,
+	}).Attrs(&moduleModel.Module{
+		ID:     util.SnowflakeId(),
+		Name:   constant.ModuleName,
+		Code:   constant.ModuleCode,
+		Cmd:    "./plugins/ruomu-ui --mc",
+		Status: -1,
+	}).FirstOrCreate(m)
+
+	md := new(moduleModel.ModuleDependency)
+	database.DB.Where(&moduleModel.ModuleDependency{
+		ModuleCode: constant.ModuleCode,
+	}).Attrs(&moduleModel.ModuleDependency{
+		ID:             util.SnowflakeId(),
+		ModuleCode:     constant.ModuleCode,
+		DependenceCode: "ruomu-uc",
+	}).FirstOrCreate(md)
+
+	// 注入信息
+	{
+		mjiList := []*moduleModel.ModuleInjectInfo{
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增项目",
+				Type:              2,
+				InjectCode:        constant.InjectCodeProjectAdd,
+				AuthorizationCode: "project:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改项目",
+				Type:              3,
+				InjectCode:        constant.InjectCodeProjectUpdate,
+				AuthorizationCode: "project:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除项目",
+				Type:              4,
+				InjectCode:        constant.InjectCodeProjectDelete,
+				AuthorizationCode: "project:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取项目列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodeProjectList,
+				AuthorizationCode: "project:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增页面",
+				Type:              2,
+				InjectCode:        constant.InjectCodePageAdd,
+				AuthorizationCode: "page:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改页面",
+				Type:              3,
+				InjectCode:        constant.InjectCodePageUpdate,
+				AuthorizationCode: "page:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除页面",
+				Type:              4,
+				InjectCode:        constant.InjectCodePageDelete,
+				AuthorizationCode: "page:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取页面列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodePageList,
+				AuthorizationCode: "page:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取页面详情",
+				Type:              1,
+				InjectCode:        constant.InjectCodePageInstance,
+				AuthorizationCode: "page:instance",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取页面schema",
+				Type:              1,
+				InjectCode:        constant.InjectCodePageSchema,
+				AuthorizationCode: "page:schema",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增组件库",
+				Type:              2,
+				InjectCode:        constant.InjectCodeMaterialLibAdd,
+				AuthorizationCode: "materialLib:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改组件库",
+				Type:              3,
+				InjectCode:        constant.InjectCodeMaterialLibUpdate,
+				AuthorizationCode: "materialLib:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除组件库",
+				Type:              4,
+				InjectCode:        constant.InjectCodeMaterialLibDelete,
+				AuthorizationCode: "materialLib:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialLibList,
+				AuthorizationCode: "materialLib:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库详情",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialLibInstance,
+				AuthorizationCode: "materialLib:instance",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增组件库分组",
+				Type:              2,
+				InjectCode:        constant.InjectCodeMaterialComponentGroupAdd,
+				AuthorizationCode: "materialComponentGroup:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改组件库分组",
+				Type:              3,
+				InjectCode:        constant.InjectCodeMaterialComponentGroupUpdate,
+				AuthorizationCode: "materialComponentGroup:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除组件库分组",
+				Type:              4,
+				InjectCode:        constant.InjectCodeMaterialComponentGroupDelete,
+				AuthorizationCode: "materialComponentGroup:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库分组列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialComponentGroupList,
+				AuthorizationCode: "materialComponentGroup:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库分组详情",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialComponentGroupInstance,
+				AuthorizationCode: "materialComponentGroup:instance",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增组件库组件",
+				Type:              2,
+				InjectCode:        constant.InjectCodeMaterialComponentAdd,
+				AuthorizationCode: "materialComponent:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改组件库组件",
+				Type:              3,
+				InjectCode:        constant.InjectCodeMaterialComponentUpdate,
+				AuthorizationCode: "materialComponent:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除组件库组件",
+				Type:              4,
+				InjectCode:        constant.InjectCodeMaterialComponentDelete,
+				AuthorizationCode: "materialComponent:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库组件列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialComponentList,
+				AuthorizationCode: "materialComponent:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取组件库组件详情",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialComponentInstance,
+				AuthorizationCode: "materialComponent:instance",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "新增项目关联物料库版本",
+				Type:              1,
+				InjectCode:        constant.InjectCodeProjectMaterialLibVersionAdd,
+				AuthorizationCode: "projectMaterialLibVersion:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "修改项目关联物料库版本",
+				Type:              2,
+				InjectCode:        constant.InjectCodeProjectMaterialLibVersionUpdate,
+				AuthorizationCode: "projectMaterialLibVersion:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除项目关联物料库版本",
+				Type:              3,
+				InjectCode:        constant.InjectCodeProjectMaterialLibVersionDelete,
+				AuthorizationCode: "projectMaterialLibVersion:delete",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取项目关联物料库版本列表",
+				Type:              1,
+				InjectCode:        constant.InjectCodeProjectMaterialLibVersionList,
+				AuthorizationCode: "projectMaterialLibVersion:list",
+			},
+		}
+
+		for _, mji := range mjiList {
+			t := new(moduleModel.ModuleInjectInfo)
+			database.DB.Where(&moduleModel.ModuleInjectInfo{
+				ModuleID:   mji.ModuleID,
+				InjectCode: mji.InjectCode,
+			}).Attrs(mji).FirstOrCreate(t)
+		}
+	}
+
+	// 设置参数
+	for k, v := range config.GetStringMapString("database") {
+		s := &moduleModel.ModuleSettings{
+			ID:       util.SnowflakeId(),
+			ModuleID: m.ID,
+			Code:     "database." + k,
+			Value:    v,
+		}
+		t := new(moduleModel.ModuleSettings)
+		database.DB.Where(&moduleModel.ModuleSettings{
+			ModuleID: m.ID,
+			Code:     s.Code,
+		}).Attrs(s).FirstOrCreate(t)
+	}
 }
