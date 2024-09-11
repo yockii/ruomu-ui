@@ -2,8 +2,6 @@ package model
 
 import (
 	"github.com/tidwall/gjson"
-
-	"github.com/yockii/ruomu-core/database"
 )
 
 type Page struct {
@@ -14,7 +12,7 @@ type Page struct {
 	Route     string `json:"route,omitempty" gorm:"size:50;comment:'页面路由'"`
 	Schema    string `json:"schema,omitempty" gorm:"text;comment:'页面配置'"`
 
-	CreateTime database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	CreateTime int64 `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (p *Page) TableComment() string {

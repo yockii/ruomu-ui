@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/tidwall/gjson"
 
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
@@ -132,15 +133,17 @@ func (_ *projectController) List(value []byte) (any, error) {
 			Msg:  server.ResponseMsgParamParseError,
 		}, nil
 	}
+
+	vj := gjson.ParseBytes(value)
 	paginate := new(server.Paginate)
-	if err := json.Unmarshal(value, instance); err != nil {
-		logger.Errorln(err)
-		return &server.CommonResponse{
-			Code: server.ResponseCodeParamParseError,
-			Msg:  server.ResponseMsgParamParseError,
-		}, nil
+	if vj.Get("limit").Exists() {
+		paginate.Limit = int(vj.Get("limit").Int())
 	}
-	if paginate.Limit <= 0 {
+	if vj.Get("offset").Exists() {
+		paginate.Offset = int(vj.Get("offset").Int())
+	}
+
+	if paginate.Limit <= 0 && paginate.Limit != -1 {
 		paginate.Limit = 10
 	}
 
@@ -175,5 +178,33 @@ func (_ *projectController) List(value []byte) (any, error) {
 			Limit:  paginate.Limit,
 			Items:  list,
 		},
+	}, nil
+}
+
+func (_ *projectController) Instance(value []byte) (any, error) {
+	instance := new(model.Project)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+	// 处理必填
+	if instance.ID == 0 {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamNotEnough,
+			Msg:  server.ResponseMsgParamNotEnough + " id",
+		}, nil
+	}
+	if err := database.DB.Where(instance).Take(instance).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+	return &server.CommonResponse{
+		Data: instance,
 	}, nil
 }

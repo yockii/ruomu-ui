@@ -2,19 +2,18 @@ package model
 
 import (
 	"github.com/tidwall/gjson"
-	"github.com/yockii/ruomu-core/database"
 )
 
 type MaterialLib struct {
-	ID              uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	Code            string            `json:"code,omitempty" gorm:"size:50;comment:'物料库代码'"`
-	Name            string            `json:"name,omitempty" gorm:"size:50;comment:'物料库名称'"`
-	PackageName     string            `json:"packageName,omitempty" gorm:"size:50;comment:'npm包名'"`
-	Website         string            `json:"website,omitempty" gorm:"size:255;comment:'官网地址'"`
-	Description     string            `json:"description,omitempty" gorm:"size:255;comment:'物料库描述'"`
-	ThumbnailUrl    string            `json:"thumbnailUrl,omitempty" gorm:"size:255;comment:'缩略图地址'"`
-	ActiveVersionID uint64            `json:"activeVersionId,omitempty,string" gorm:"comment:'当前版本ID'"`
-	CreateTime      database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID              uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	Code            string `json:"code,omitempty" gorm:"size:50;comment:'物料库代码'"`
+	Name            string `json:"name,omitempty" gorm:"size:50;comment:'物料库名称'"`
+	PackageName     string `json:"packageName,omitempty" gorm:"size:50;comment:'npm包名'"`
+	Website         string `json:"website,omitempty" gorm:"size:255;comment:'官网地址'"`
+	Description     string `json:"description,omitempty" gorm:"size:255;comment:'物料库描述'"`
+	ThumbnailUrl    string `json:"thumbnailUrl,omitempty" gorm:"size:255;comment:'缩略图地址'"`
+	ActiveVersionID uint64 `json:"activeVersionId,omitempty,string" gorm:"comment:'当前版本ID'"`
+	CreateTime      int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (m *MaterialLib) TableComment() string {
@@ -36,13 +35,13 @@ func (m *MaterialLib) UnmarshalJSON(b []byte) error {
 }
 
 type MaterialLibVersion struct {
-	ID            uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	LibID         uint64            `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
-	Version       string            `json:"version,omitempty" gorm:"size:50;comment:'版本号'"`
-	PluginUseName string            `json:"pluginUseName,omitempty" gorm:"size:50;comment:'插件使用名称'"`
-	CdnJsUrl      string            `json:"cdnJsUrl,omitempty" gorm:"size:255;comment:'CDN JS地址'"`
-	CdnCssUrl     string            `json:"cdnCssUrl,omitempty" gorm:"size:255;comment:'CDN CSS地址'"`
-	CreateTime    database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID            uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	LibID         uint64 `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
+	Version       string `json:"version,omitempty" gorm:"size:50;comment:'版本号'"`
+	PluginUseName string `json:"pluginUseName,omitempty" gorm:"size:50;comment:'插件使用名称'"`
+	CdnJsUrl      string `json:"cdnJsUrl,omitempty" gorm:"size:255;comment:'CDN JS地址'"`
+	CdnCssUrl     string `json:"cdnCssUrl,omitempty" gorm:"size:255;comment:'CDN CSS地址'"`
+	CreateTime    int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (m *MaterialLibVersion) TableComment() string {
@@ -62,13 +61,13 @@ func (m *MaterialLibVersion) UnmarshalJSON(b []byte) error {
 }
 
 type MaterialComponentGroup struct {
-	ID          uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	LibID       uint64            `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
-	LibCode     string            `json:"libCode,omitempty" gorm:"size:50;comment:'物料库代码'"`
-	Name        string            `json:"name,omitempty" gorm:"size:50;comment:'分组名称'"`
-	Description string            `json:"description,omitempty" gorm:"size:255;comment:'分组描述'"`
-	OrderNum    int               `json:"orderNum,omitempty" gorm:"comment:'排序'"`
-	CreateTime  database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID          uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	LibID       uint64 `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
+	LibCode     string `json:"libCode,omitempty" gorm:"size:50;comment:'物料库代码'"`
+	Name        string `json:"name,omitempty" gorm:"size:50;comment:'分组名称'"`
+	Description string `json:"description,omitempty" gorm:"size:255;comment:'分组描述'"`
+	OrderNum    int    `json:"orderNum,omitempty" gorm:"comment:'排序'"`
+	CreateTime  int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (m *MaterialComponentGroup) TableComment() string {
@@ -88,15 +87,15 @@ func (m *MaterialComponentGroup) UnmarshalJSON(b []byte) error {
 }
 
 type MaterialComponent struct {
-	ID          uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	LibID       uint64            `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
-	GroupID     uint64            `json:"groupId,omitempty,string" gorm:"comment:'分组ID'"`
-	Name        string            `json:"name,omitempty" gorm:"size:50;comment:'组件名称'"`
-	Description string            `json:"description,omitempty" gorm:"size:255;comment:'组件描述'"`
-	TagName     string            `json:"tagName,omitempty" gorm:"size:50;comment:'组件标签名'"`
-	Thumbnail   string            `json:"thumbnail,omitempty" gorm:"size:255;comment:'缩略图'"`
-	Schema      string            `json:"schema,omitempty" gorm:"text;comment:'配置json'"`
-	CreateTime  database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID          uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	LibID       uint64 `json:"libId,omitempty,string" gorm:"comment:'物料库ID'"`
+	GroupID     uint64 `json:"groupId,omitempty,string" gorm:"comment:'分组ID'"`
+	Name        string `json:"name,omitempty" gorm:"size:50;comment:'组件名称'"`
+	Description string `json:"description,omitempty" gorm:"size:255;comment:'组件描述'"`
+	TagName     string `json:"tagName,omitempty" gorm:"size:50;comment:'组件标签名'"`
+	Thumbnail   string `json:"thumbnail,omitempty" gorm:"size:255;comment:'缩略图'"`
+	Schema      string `json:"schema,omitempty" gorm:"text;comment:'配置json'"`
+	CreateTime  int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (m *MaterialComponent) TableComment() string {

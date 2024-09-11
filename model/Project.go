@@ -2,16 +2,15 @@ package model
 
 import (
 	"github.com/tidwall/gjson"
-	"github.com/yockii/ruomu-core/database"
 )
 
 type Project struct {
-	ID          uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	Name        string            `json:"name,omitempty" gorm:"size:50;comment:'项目名称'"`
-	Description string            `json:"description,omitempty" gorm:"size:255;comment:'项目描述'"`
-	HomePageID  uint64            `json:"homePageID,omitempty,string" gorm:"comment:'首页ID'"`
-	Status      int               `json:"status,omitempty" gorm:"comment:'项目状态'"`
-	CreateTime  database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID          uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	Name        string `json:"name,omitempty" gorm:"size:50;comment:'项目名称'"`
+	Description string `json:"description,omitempty" gorm:"size:255;comment:'项目描述'"`
+	HomePageID  uint64 `json:"homePageID,omitempty,string" gorm:"comment:'首页ID'"`
+	Status      int    `json:"status,omitempty" gorm:"comment:'项目状态'"`
+	CreateTime  int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (p *Project) TableComment() string {
@@ -30,11 +29,11 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 }
 
 type ProjectMaterialLibVersion struct {
-	ID           uint64            `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	ProjectID    uint64            `json:"projectId,omitempty,string" gorm:"index;comment:'项目ID'"`
-	LibID        uint64            `json:"libId,omitempty,string" gorm:"index;comment:'物料库ID'"`
-	LibVersionID uint64            `json:"libVersionId,omitempty,string" gorm:"index;comment:'物料库版本ID'"`
-	CreateTime   database.DateTime `json:"createTime" gorm:"autoCreateTime"`
+	ID           uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	ProjectID    uint64 `json:"projectId,omitempty,string" gorm:"index;comment:'项目ID'"`
+	LibID        uint64 `json:"libId,omitempty,string" gorm:"index;comment:'物料库ID'"`
+	LibVersionID uint64 `json:"libVersionId,omitempty,string" gorm:"index;comment:'物料库版本ID'"`
+	CreateTime   int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
 func (p *ProjectMaterialLibVersion) TableComment() string {

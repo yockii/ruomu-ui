@@ -17,6 +17,8 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 		return wrapCall(value, ProjectController.Delete)
 	case constant.InjectCodeProjectList:
 		return wrapCall(value, ProjectController.List)
+	case constant.InjectCodeProjectInstance:
+		return wrapCall(value, ProjectController.Instance)
 
 	case constant.InjectCodePageAdd:
 		return wrapCall(value, PageController.Add)
@@ -62,7 +64,7 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 	case constant.InjectCodeMaterialComponentInstance:
 		return wrapCall(value, MaterialComponentController.Instance)
 	case constant.InjectCodeMaterialComponentList:
-		return wrapCall(value, MaterialComponentController.List)
+		return wrapCall(value, MaterialComponentController.ListWithMetaInfo)
 
 	case constant.InjectCodeProjectMaterialLibVersionAdd:
 		return wrapCall(value, ProjectMaterialLibVersionController.Add)
@@ -74,7 +76,9 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 		return wrapCall(value, ProjectMaterialLibVersionController.List)
 
 	case constant.InjectCodeIndexHtml:
-		return wrapCall(value, HtmlRenderController.Canvas)
+		return wrapHtmlCall(value, HtmlRenderController.Index)
+	case constant.InjectCodeCanvasHtml:
+		return wrapHtmlCall(value, HtmlRenderController.Canvas)
 	}
 	return nil, nil
 }
@@ -86,4 +90,9 @@ func wrapCall(v []byte, f func([]byte) (any, error)) ([]byte, error) {
 	}
 	bs, err := json.Marshal(r)
 	return bs, err
+}
+
+func wrapHtmlCall(v []byte, f func([]byte) (any, error)) ([]byte, error) {
+	r, err := f(v)
+	return r.([]byte), err
 }

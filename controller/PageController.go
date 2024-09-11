@@ -136,15 +136,17 @@ func (_ *pageController) List(value []byte) (any, error) {
 			Msg:  server.ResponseMsgParamParseError,
 		}, nil
 	}
+
+	vj := gjson.ParseBytes(value)
 	paginate := new(server.Paginate)
-	if err := json.Unmarshal(value, instance); err != nil {
-		logger.Errorln(err)
-		return &server.CommonResponse{
-			Code: server.ResponseCodeParamParseError,
-			Msg:  server.ResponseMsgParamParseError,
-		}, nil
+	if vj.Get("limit").Exists() {
+		paginate.Limit = int(vj.Get("limit").Int())
 	}
-	if paginate.Limit <= 0 {
+	if vj.Get("offset").Exists() {
+		paginate.Offset = int(vj.Get("offset").Int())
+	}
+
+	if paginate.Limit <= 0 && paginate.Limit != -1 {
 		paginate.Limit = 10
 	}
 

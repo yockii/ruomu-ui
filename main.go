@@ -89,7 +89,7 @@ func registerModule() {
 		Name:   constant.ModuleName,
 		Code:   constant.ModuleCode,
 		Cmd:    "./plugins/ruomu-ui --mc",
-		Status: -1,
+		Status: 1,
 	}).FirstOrCreate(m)
 
 	md := new(moduleModel.ModuleDependency)
@@ -104,6 +104,24 @@ func registerModule() {
 	// 注入信息
 	{
 		mjiList := []*moduleModel.ModuleInjectInfo{
+			// render
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取主页面",
+				Type:              11,
+				InjectCode:        constant.InjectCodeIndexHtml,
+				AuthorizationCode: "anon",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取配置页面",
+				Type:              11,
+				InjectCode:        constant.InjectCodeCanvasHtml,
+				AuthorizationCode: "page:schema",
+			},
+			// json
 			{
 				ID:                util.SnowflakeId(),
 				ModuleID:          m.ID,
@@ -135,6 +153,14 @@ func registerModule() {
 				Type:              1,
 				InjectCode:        constant.InjectCodeProjectList,
 				AuthorizationCode: "project:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "获取项目详情",
+				Type:              1,
+				InjectCode:        constant.InjectCodeProjectInstance,
+				AuthorizationCode: "project:instance",
 			},
 			{
 				ID:                util.SnowflakeId(),
@@ -360,5 +386,48 @@ func registerModule() {
 			ModuleID: m.ID,
 			Code:     s.Code,
 		}).Attrs(s).FirstOrCreate(t)
+	}
+
+	// 界面数据
+	{
+		// 创建项目
+		project := &model.Project{}
+		database.DB.Where(&model.Project{
+			Name: project.Name,
+		}).Attrs(&model.Project{
+			ID:          util.SnowflakeId(),
+			Name:        "默认项目",
+			Description: "若木平台基础项目",
+			Status:      1,
+		}).FirstOrCreate(project)
+
+		naiveUiLibId := persistNaiveUiLib()
+
+		// 物料版本
+		naiveUiLibVersion := new(model.MaterialLibVersion)
+		database.DB.Where(&model.MaterialLibVersion{
+			LibID: naiveUiLibId,
+		}).Attrs(&model.MaterialLibVersion{
+			ID:            util.SnowflakeId(),
+			LibID:         naiveUiLibId,
+			Version:       "2.39.0",
+			PluginUseName: "naive",
+			CdnJsUrl:      "https://unpkg.com/naive-ui@2.39.0/dist/index.prod.js",
+		}).FirstOrCreate(naiveUiLibVersion)
+
+		// 项目关联物料库版本
+		database.DB.Where(&model.ProjectMaterialLibVersion{
+			ProjectID:    project.ID,
+			LibID:        naiveUiLibId,
+			LibVersionID: naiveUiLibVersion.ID,
+		}).Attrs(&model.ProjectMaterialLibVersion{
+			ID:           util.SnowflakeId(),
+			ProjectID:    project.ID,
+			LibID:        naiveUiLibId,
+			LibVersionID: naiveUiLibVersion.ID,
+		}).FirstOrCreate(new(model.ProjectMaterialLibVersion))
+
+		config.Set("project.id", project.ID)
+		_ = config.WriteConfig()
 	}
 }

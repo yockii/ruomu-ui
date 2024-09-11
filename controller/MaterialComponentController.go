@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	logger "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-core/server"
 	"github.com/yockii/ruomu-core/util"
+	"github.com/yockii/ruomu-ui/domain"
 	"gorm.io/gorm"
+	"sync"
 
 	"github.com/yockii/ruomu-ui/model"
 )
@@ -136,15 +139,17 @@ func (_ *materialComponentController) List(value []byte) (any, error) {
 			Msg:  server.ResponseMsgParamParseError,
 		}, nil
 	}
+
+	vj := gjson.ParseBytes(value)
 	paginate := new(server.Paginate)
-	if err := json.Unmarshal(value, instance); err != nil {
-		logger.Errorln(err)
-		return &server.CommonResponse{
-			Code: server.ResponseCodeParamParseError,
-			Msg:  server.ResponseMsgParamParseError,
-		}, nil
+	if vj.Get("limit").Exists() {
+		paginate.Limit = int(vj.Get("limit").Int())
 	}
-	if paginate.Limit <= 0 {
+	if vj.Get("offset").Exists() {
+		paginate.Offset = int(vj.Get("offset").Int())
+	}
+
+	if paginate.Limit <= 0 && paginate.Limit != -1 {
 		paginate.Limit = 10
 	}
 
@@ -180,6 +185,82 @@ func (_ *materialComponentController) List(value []byte) (any, error) {
 			Offset: paginate.Offset,
 			Limit:  paginate.Limit,
 			Items:  list,
+		},
+	}, nil
+}
+
+func (_ *materialComponentController) ListWithMetaInfo(value []byte) (any, error) {
+	instance := new(domain.MaterialComponentCondition)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+
+	if instance.LibVersionID == 0 {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamNotEnough,
+			Msg:  server.ResponseMsgParamNotEnough + " libVersionId",
+		}, nil
+	}
+
+	sub := database.DB.Model(&model.MaterialComponentVersion{}).Select("component_id").Where(&model.ProjectMaterialLibVersion{LibVersionID: instance.LibVersionID})
+
+	tx := database.DB.Model(&model.MaterialComponent{}).Where("id in (?)", sub)
+
+	//condition := &model.MaterialComponent{
+	//	ID:      instance.ID,
+	//	LibID:   instance.LibID,
+	//	GroupID: instance.GroupID,
+	//}
+	//if instance.Name != "" {
+	//	tx.Where("name like ?", "%"+instance.Name+"%")
+	//	instance.Name = ""
+	//}
+	//if instance.TagName != "" {
+	//	tx.Where("tag_name like ?", "%"+instance.TagName+"%")
+	//	instance.TagName = ""
+	//}
+
+	var list []*model.MaterialComponent
+	if err := tx.Find(&list).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+
+	var result []*domain.Component
+	var wg sync.WaitGroup
+	for _, item := range list {
+		c := &domain.Component{
+			MaterialComponent: *item,
+		}
+		result = append(result, c)
+		wg.Add(1)
+		go func(dc *domain.Component) {
+			defer wg.Done()
+			// 把schema 解析成metaInfo
+			metaInfo := new(domain.ComponentMetaInfo)
+			if err := json.Unmarshal([]byte(dc.Schema), metaInfo); err != nil {
+				logger.Errorln(err)
+				return
+			}
+			dc.MetaInfo = *metaInfo
+			dc.Schema = ""
+		}(c)
+	}
+	wg.Wait()
+
+	return &server.CommonResponse{
+		Data: &server.Paginate{
+			Total:  int64(len(list)),
+			Offset: -1,
+			Limit:  -1,
+			Items:  result,
 		},
 	}, nil
 }
