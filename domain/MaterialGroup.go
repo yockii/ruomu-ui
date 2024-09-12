@@ -34,12 +34,13 @@ type Property struct {
 type WidgetComponent string
 
 const (
-	WidgetComponentSwitch WidgetComponent = "switch"
-	WidgetComponentColor  WidgetComponent = "color"
-	WidgetComponentSelect WidgetComponent = "select"
-	WidgetComponentInput  WidgetComponent = "input"
-	WidgetComponentNumber WidgetComponent = "number"
-	WidgetComponentSlider WidgetComponent = "slider"
+	WidgetComponentSwitch   WidgetComponent = "switch"
+	WidgetComponentColor    WidgetComponent = "color"
+	WidgetComponentSelect   WidgetComponent = "select"
+	WidgetComponentInput    WidgetComponent = "input"
+	WidgetComponentNumber   WidgetComponent = "number"
+	WidgetComponentSlider   WidgetComponent = "slider"
+	WidgetComponentFunction WidgetComponent = "function"
 )
 
 type Widget struct {
