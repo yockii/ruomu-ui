@@ -230,9 +230,17 @@ func (_ *pageController) Schema(value []byte) (any, error) {
 		}, nil
 	}
 
-	j := gjson.Parse(instance.Schema)
+	// instance.Schema转为map
+	result := make(map[string]any)
+	if err := json.Unmarshal([]byte(instance.Schema), &result); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError + err.Error(),
+		}, nil
+	}
 
 	return &server.CommonResponse{
-		Data: j.Map(),
+		Data: result,
 	}, nil
 }

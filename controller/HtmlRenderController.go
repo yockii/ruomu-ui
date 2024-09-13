@@ -18,8 +18,8 @@ type htmlRenderController struct {
 	templates map[string]*template.Template
 }
 
-func JsVar(name string) string {
-	return name
+func JsVar(name string) template.JS {
+	return template.JS(name)
 }
 
 func parseHtmlTemplate(path string) (*template.Template, error) {

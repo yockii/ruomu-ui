@@ -192,7 +192,7 @@ func registerModule() {
 				Name:              "获取页面列表",
 				Type:              1,
 				InjectCode:        constant.InjectCodePageList,
-				AuthorizationCode: "page:list",
+				AuthorizationCode: "anon",
 			},
 			{
 				ID:                util.SnowflakeId(),
@@ -208,7 +208,7 @@ func registerModule() {
 				Name:              "获取页面schema",
 				Type:              1,
 				InjectCode:        constant.InjectCodePageSchema,
-				AuthorizationCode: "page:schema",
+				AuthorizationCode: "anon",
 			},
 			{
 				ID:                util.SnowflakeId(),
