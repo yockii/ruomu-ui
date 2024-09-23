@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/tidwall/gjson"
+	"github.com/yockii/ruomu-ui/domain"
 
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
@@ -49,6 +50,7 @@ func (_ *projectController) Add(value []byte) (any, error) {
 	}
 
 	instance.ID = util.SnowflakeId()
+	instance.StoreJson = "[]"
 	if err := database.DB.Create(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -62,7 +64,7 @@ func (_ *projectController) Add(value []byte) (any, error) {
 }
 
 func (_ *projectController) Update(value []byte) (any, error) {
-	instance := new(model.Project)
+	instance := new(domain.Project)
 	if err := json.Unmarshal(value, instance); err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -78,11 +80,19 @@ func (_ *projectController) Update(value []byte) (any, error) {
 		}, nil
 	}
 
+	storeJson := ""
+
+	if len(instance.Store) > 0 {
+		bs, _ := json.Marshal(instance.Store)
+		storeJson = string(bs)
+	}
+
 	if err := database.DB.Model(&model.Project{ID: instance.ID}).Updates(&model.Project{
 		Name:        instance.Name,
 		Description: instance.Description,
 		HomePageID:  instance.HomePageID,
 		Status:      instance.Status,
+		StoreJson:   storeJson,
 	}).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -163,7 +173,7 @@ func (_ *projectController) List(value []byte) (any, error) {
 
 	var list []*model.Project
 	var total int64
-	err := tx.Find(&list, condition).Offset(-1).Count(&total).Error
+	err := tx.Omit("store_json").Find(&list, condition).Offset(-1).Count(&total).Error
 	if err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -204,7 +214,22 @@ func (_ *projectController) Instance(value []byte) (any, error) {
 			Msg:  server.ResponseMsgDatabase + err.Error(),
 		}, nil
 	}
+
+	result := &domain.Project{
+		Project: *instance,
+	}
+	if instance.StoreJson == "" {
+		result.Store = make([]map[string]any, 0)
+	} else {
+		if err := json.Unmarshal([]byte(instance.StoreJson), &result.Store); err != nil {
+			logger.Errorln(err)
+			return &server.CommonResponse{
+				Code: server.ResponseCodeDatabase,
+				Msg:  server.ResponseMsgDatabase + err.Error(),
+			}, nil
+		}
+	}
 	return &server.CommonResponse{
-		Data: instance,
+		Data: result,
 	}, nil
 }

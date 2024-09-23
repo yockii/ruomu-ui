@@ -10,6 +10,7 @@ type Project struct {
 	Description string `json:"description,omitempty" gorm:"size:255;comment:'项目描述'"`
 	HomePageID  uint64 `json:"homePageID,omitempty,string" gorm:"comment:'首页ID'"`
 	Status      int    `json:"status,omitempty" gorm:"comment:'项目状态'"`
+	StoreJson   string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
 	CreateTime  int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
@@ -24,6 +25,7 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 	p.Description = j.Get("description").String()
 	p.HomePageID = j.Get("homePageID").Uint()
 	p.Status = int(j.Get("status").Int())
+	p.StoreJson = j.Get("store").String()
 
 	return nil
 }
