@@ -26,6 +26,7 @@ func (UiCore) Initial(params map[string]string) error {
 	// 同步表结构
 	_ = database.DB.AutoMigrate(
 		&model.Project{},
+		&model.ProjectFrontend{},
 		&model.Page{},
 		&model.MaterialLib{},
 		&model.MaterialLibVersion{},
@@ -137,6 +138,14 @@ func registerModule() {
 				Type:              3,
 				InjectCode:        constant.InjectCodeProjectUpdate,
 				AuthorizationCode: "project:update",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "更新项目前端配置",
+				Type:              3,
+				InjectCode:        constant.InjectCodeProjectUpdateFrontend,
+				AuthorizationCode: "project:updateFrontend",
 			},
 			{
 				ID:                util.SnowflakeId(),

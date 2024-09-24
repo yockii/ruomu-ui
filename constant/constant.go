@@ -4,11 +4,12 @@ const ModuleCode = "ui"
 const ModuleName = "界面中心"
 
 const (
-	InjectCodeProjectAdd      = "/project/add"
-	InjectCodeProjectUpdate   = "/project/update"
-	InjectCodeProjectDelete   = "/project/delete"
-	InjectCodeProjectList     = "/project/list"
-	InjectCodeProjectInstance = "/project/instance"
+	InjectCodeProjectAdd            = "/project/add"
+	InjectCodeProjectUpdate         = "/project/update"
+	InjectCodeProjectUpdateFrontend = "/project/updateFrontend"
+	InjectCodeProjectDelete         = "/project/delete"
+	InjectCodeProjectList           = "/project/list"
+	InjectCodeProjectInstance       = "/project/instance"
 
 	InjectCodePageAdd      = "/page/add"
 	InjectCodePageUpdate   = "/page/update"

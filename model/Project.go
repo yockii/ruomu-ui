@@ -10,7 +10,6 @@ type Project struct {
 	Description string `json:"description,omitempty" gorm:"size:255;comment:'项目描述'"`
 	HomePageID  uint64 `json:"homePageID,omitempty,string" gorm:"comment:'首页ID'"`
 	Status      int    `json:"status,omitempty" gorm:"comment:'项目状态'"`
-	StoreJson   string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
 	CreateTime  int64  `json:"createTime" gorm:"autoCreateTime"`
 }
 
@@ -25,7 +24,29 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 	p.Description = j.Get("description").String()
 	p.HomePageID = j.Get("homePageID").Uint()
 	p.Status = int(j.Get("status").Int())
+
+	return nil
+}
+
+type ProjectFrontend struct {
+	ID        uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	StoreJson string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
+	JsJson    string `json:"jsJson" gorm:"text;comment:'js代码'"`
+	CssJson   string `json:"cssJson" gorm:"text;comment:'css代码'"`
+	ApiJson   string `json:"apiJson" gorm:"text;comment:'api代码'"`
+}
+
+func (p *ProjectFrontend) TableComment() string {
+	return "项目前端代码表"
+}
+
+func (p *ProjectFrontend) UnmarshalJSON(b []byte) error {
+	j := gjson.ParseBytes(b)
+	p.ID = j.Get("id").Uint()
 	p.StoreJson = j.Get("store").String()
+	p.JsJson = j.Get("js").String()
+	p.CssJson = j.Get("css").String()
+	p.ApiJson = j.Get("api").String()
 
 	return nil
 }

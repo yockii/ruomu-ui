@@ -13,6 +13,8 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 		return wrapCall(value, ProjectController.Add)
 	case constant.InjectCodeProjectUpdate:
 		return wrapCall(value, ProjectController.Update)
+	case constant.InjectCodeProjectUpdateFrontend:
+		return wrapCall(value, ProjectController.UpdateFrontend)
 	case constant.InjectCodeProjectDelete:
 		return wrapCall(value, ProjectController.Delete)
 	case constant.InjectCodeProjectList:
