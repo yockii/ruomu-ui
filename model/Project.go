@@ -31,9 +31,9 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 type ProjectFrontend struct {
 	ID        uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
 	StoreJson string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
-	JsJson    string `json:"jsJson" gorm:"text;comment:'js代码'"`
-	CssJson   string `json:"cssJson" gorm:"text;comment:'css代码'"`
-	ApiJson   string `json:"apiJson" gorm:"text;comment:'api代码'"`
+	JsJson    string `json:"-" gorm:"text;comment:'js代码'"`
+	CssJson   string `json:"-" gorm:"text;comment:'css代码'"`
+	ApiJson   string `json:"-" gorm:"text;comment:'api代码'"`
 }
 
 func (p *ProjectFrontend) TableComment() string {

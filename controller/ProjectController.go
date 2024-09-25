@@ -294,11 +294,11 @@ func (_ *projectController) Instance(value []byte) (any, error) {
 	//		logger.Errorln(err)
 	//	}
 	//}
-	//if pf.ApiJson != "" {
-	//	if err := json.Unmarshal([]byte(pf.ApiJson), &result.Api); err != nil {
-	//		logger.Errorln(err)
-	//	}
-	//}
+	if pf.ApiJson != "" {
+		if err := json.Unmarshal([]byte(pf.ApiJson), &result.Api); err != nil {
+			logger.Errorln(err)
+		}
+	}
 
 	return &server.CommonResponse{
 		Data: result,
