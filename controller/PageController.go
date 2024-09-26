@@ -3,7 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/tidwall/gjson"
+	"github.com/yockii/ruomu-ui/constant"
 
 	logger "github.com/sirupsen/logrus"
 	"github.com/yockii/ruomu-core/database"
@@ -29,10 +31,10 @@ func (_ *pageController) Add(value []byte) (any, error) {
 	}
 
 	// 处理必填
-	if instance.Name == "" || instance.ProjectID == 0 {
+	if instance.Name == "" || instance.ProjectID == 0 || instance.FileName == "" {
 		return &server.CommonResponse{
 			Code: server.ResponseCodeParamNotEnough,
-			Msg:  server.ResponseMsgParamNotEnough + " name / project id",
+			Msg:  server.ResponseMsgParamNotEnough + " name / project id / file name",
 		}, nil
 	}
 
@@ -51,6 +53,11 @@ func (_ *pageController) Add(value []byte) (any, error) {
 	}
 
 	instance.ID = util.SnowflakeId()
+
+	if instance.Schema == "" {
+		instance.Schema = fmt.Sprintf(constant.DefaultPageSchema, instance.ID, instance.FileName)
+	}
+
 	if err := database.DB.Create(instance).Error; err != nil {
 		logger.Errorln(err)
 		return &server.CommonResponse{
@@ -58,6 +65,7 @@ func (_ *pageController) Add(value []byte) (any, error) {
 			Msg:  server.ResponseMsgDatabase + err.Error(),
 		}, nil
 	}
+	instance.Schema = ""
 	return &server.CommonResponse{
 		Data: instance,
 	}, nil
