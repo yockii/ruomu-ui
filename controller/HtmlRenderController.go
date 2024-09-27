@@ -56,6 +56,12 @@ func (c *htmlRenderController) Index(value []byte) (any, error) {
 		instance.ID = config.GetUint64("project.id")
 	}
 
+	// 获取项目信息
+	if err := database.DB.Where(&model.Project{ID: instance.ID}).First(&instance).Error; err != nil {
+		logger.Errorln(err)
+		return c.renderError(err)
+	}
+
 	// 查询下项目用到的库
 	var pmlList []*model.ProjectMaterialLibVersion
 	if err := database.DB.Where(&model.ProjectMaterialLibVersion{ProjectID: instance.ID}).Find(&pmlList).Error; err != nil {
@@ -76,6 +82,13 @@ func (c *htmlRenderController) Index(value []byte) (any, error) {
 		}
 	}
 
+	// 所有pages信息
+	var pages []*model.Page
+	if err := database.DB.Where(&model.Page{ProjectID: instance.ID}).Find(&pages).Error; err != nil {
+		logger.Errorln(err)
+		return c.renderError(err)
+	}
+
 	buf := new(bytes.Buffer)
 	var temp *template.Template
 	var err error
@@ -91,6 +104,7 @@ func (c *htmlRenderController) Index(value []byte) (any, error) {
 	err = temp.Execute(buf, map[string]any{
 		"instance": instance,
 		"libList":  mlvList,
+		"pages":    pages,
 	})
 	return buf.Bytes(), err
 }
