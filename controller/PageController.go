@@ -93,6 +93,7 @@ func (_ *pageController) Update(value []byte) (any, error) {
 		Name:      instance.Name,
 		ParentID:  instance.ParentID,
 		Route:     instance.Route,
+		FileName:  instance.FileName,
 		Schema:    instance.Schema,
 	}).Error; err != nil {
 		logger.Errorln(err)
