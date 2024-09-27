@@ -8,6 +8,7 @@ import (
 	"github.com/yockii/ruomu-core/config"
 	"github.com/yockii/ruomu-core/database"
 	"github.com/yockii/ruomu-ui/model"
+	"gorm.io/gorm"
 	"html/template"
 	"path/filepath"
 )
@@ -62,6 +63,15 @@ func (c *htmlRenderController) Index(value []byte) (any, error) {
 		return c.renderError(err)
 	}
 
+	// 获取前端配置信息
+	frontend := new(model.ProjectFrontend)
+	if err := database.DB.Where(&model.ProjectFrontend{ID: instance.ID}).First(&frontend).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorln(err)
+			return c.renderError(err)
+		}
+	}
+
 	// 查询下项目用到的库
 	var pmlList []*model.ProjectMaterialLibVersion
 	if err := database.DB.Where(&model.ProjectMaterialLibVersion{ProjectID: instance.ID}).Find(&pmlList).Error; err != nil {
@@ -103,6 +113,7 @@ func (c *htmlRenderController) Index(value []byte) (any, error) {
 	}
 	err = temp.Execute(buf, map[string]any{
 		"instance": instance,
+		"frontend": frontend,
 		"libList":  mlvList,
 		"pages":    pages,
 	})
