@@ -169,7 +169,7 @@ func registerModule() {
 				Name:              "获取项目详情",
 				Type:              1,
 				InjectCode:        constant.InjectCodeProjectInstance,
-				AuthorizationCode: "project:instance",
+				AuthorizationCode: "anon",
 			},
 			{
 				ID:                util.SnowflakeId(),
