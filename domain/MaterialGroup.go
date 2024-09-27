@@ -17,7 +17,13 @@ type ComponentMetaInfo struct {
 	IsContainer bool             `json:"isContainer,omitempty"`
 	Props       []PropGroup      `json:"props,omitempty"`
 	Events      map[string]Event `json:"events,omitempty"`
-	Slots       []string         `json:"slots,omitempty"`
+	Slots       []SlotInfo       `json:"slots,omitempty"`
+}
+
+type SlotInfo struct {
+	Name              string   `json:"name"`
+	Description       string   `json:"description,omitempty"`
+	AllowedComponents []string `json:"allowedComponents,omitempty"`
 }
 
 type Property struct {

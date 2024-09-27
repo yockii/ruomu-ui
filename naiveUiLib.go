@@ -204,7 +204,14 @@ var NaiveUiLibGroups = []domain.Group{
 							Params:      []string{"mouseEvent"},
 						},
 					},
-					Slots: []string{"default", "icon"},
+					Slots: []domain.SlotInfo{
+						{
+							Name: "default",
+						},
+						{
+							Name: "icon",
+						},
+					},
 				},
 			},
 			// 卡片
@@ -315,7 +322,14 @@ var NaiveUiLibGroups = []domain.Group{
 							Params:      []string{},
 						},
 					},
-					Slots: []string{"header", "default", "header-extra", "cover", "footer", "action"},
+					Slots: []domain.SlotInfo{
+						{Name: "default"},
+						{Name: "header"},
+						{Name: "header-extra"},
+						{Name: "cover"},
+						{Name: "footer"},
+						{Name: "action"},
+					},
 				},
 			},
 		},
@@ -478,7 +492,7 @@ var NaiveUiLibGroups = []domain.Group{
 							},
 						},
 					},
-					Slots: []string{"default"},
+					Slots: []domain.SlotInfo{{Name: "default"}},
 				},
 			},
 			// 表单项
@@ -561,7 +575,7 @@ var NaiveUiLibGroups = []domain.Group{
 							},
 						},
 					},
-					Slots: []string{"default"},
+					Slots: []domain.SlotInfo{{Name: "default"}},
 				},
 			},
 			// 文字输入
@@ -879,7 +893,15 @@ var NaiveUiLibGroups = []domain.Group{
 							Params:      []string{"value"},
 						},
 					},
-					Slots: []string{"clear-icon", "count", "prefix", "suffix", "password-invisible-icon", "password-visible-icon", "separator"},
+					Slots: []domain.SlotInfo{
+						{Name: "prefix"},
+						{Name: "suffix"},
+						{Name: "clear-icon"},
+						{Name: "password-invisible-icon"},
+						{Name: "password-visible-icon"},
+						{Name: "separator"},
+						{Name: "count"},
+					},
 				},
 			},
 		},
