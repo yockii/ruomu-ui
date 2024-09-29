@@ -83,12 +83,12 @@ func persistNaiveUiLib() uint64 {
 				}).FirstOrCreate(modelComponent)
 
 				// component-version
-				database.DB.Where(&model.MaterialComponentVersion{
+				database.DB.Where(&model.MaterialVersionComponent{
 					ComponentID:  modelComponent.ID,
 					LibVersionID: libVersion.ID,
-				}).Attrs(&model.MaterialComponentVersion{
+				}).Attrs(&model.MaterialVersionComponent{
 					ID: util.SnowflakeId(),
-				}).FirstOrCreate(new(model.MaterialComponentVersion))
+				}).FirstOrCreate(new(model.MaterialVersionComponent))
 			}
 		}
 	}

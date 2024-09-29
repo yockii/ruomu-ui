@@ -40,6 +40,9 @@ const (
 	InjectCodeProjectMaterialLibVersionUpdate = "/projectMaterialLibVersion/update"
 	InjectCodeProjectMaterialLibVersionDelete = "/projectMaterialLibVersion/delete"
 	InjectCodeProjectMaterialLibVersionList   = "/projectMaterialLibVersion/list"
+
+	InjectCodeMaterialVersionComponentAdd    = "/materialVersionComponent/add"
+	InjectCodeMaterialVersionComponentDelete = "/materialVersionComponent/delete"
 )
 
 // html 模板渲染

@@ -206,7 +206,7 @@ func (_ *materialComponentController) ListWithMetaInfo(value []byte) (any, error
 		}, nil
 	}
 
-	sub := database.DB.Model(&model.MaterialComponentVersion{}).Select("component_id").Where(&model.ProjectMaterialLibVersion{LibVersionID: instance.LibVersionID})
+	sub := database.DB.Model(&model.MaterialVersionComponent{}).Select("component_id").Where(&model.ProjectMaterialLibVersion{LibVersionID: instance.LibVersionID})
 
 	tx := database.DB.Model(&model.MaterialComponent{}).Where("id in (?)", sub)
 
@@ -286,5 +286,80 @@ func (_ *materialComponentController) Instance(value []byte) (any, error) {
 	}
 	return &server.CommonResponse{
 		Data: instance,
+	}, nil
+}
+
+func (_ *materialComponentController) VersionAdd(value []byte) (any, error) {
+	instance := new(model.MaterialVersionComponent)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+
+	// 处理必填
+	if instance.ComponentID == 0 || instance.LibVersionID == 0 {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamNotEnough,
+			Msg:  server.ResponseMsgParamNotEnough + " component id / lib id",
+		}, nil
+	}
+
+	var c int64
+	if err := database.DB.Model(&model.MaterialVersionComponent{}).Where(&model.MaterialVersionComponent{ComponentID: instance.ComponentID, LibVersionID: instance.LibVersionID}).Count(&c).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	} else if c > 0 {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDuplicated,
+			Msg:  server.ResponseMsgDuplicated,
+		}, nil
+	}
+
+	instance.ID = util.SnowflakeId()
+	if err := database.DB.Create(instance).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+	return &server.CommonResponse{
+		Data: instance,
+	}, nil
+}
+
+func (_ *materialComponentController) VersionDelete(value []byte) (any, error) {
+	instance := new(model.MaterialVersionComponent)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+
+	// 处理必填
+	if instance.ID == 0 && (instance.ComponentID == 0 || instance.LibVersionID == 0) {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamNotEnough,
+			Msg:  server.ResponseMsgParamNotEnough + " id",
+		}, nil
+	}
+
+	if err := database.DB.Where(instance).Delete(instance).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+	return &server.CommonResponse{
+		Data: true,
 	}, nil
 }

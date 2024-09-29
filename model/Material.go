@@ -116,17 +116,17 @@ func (m *MaterialComponent) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-type MaterialComponentVersion struct {
+type MaterialVersionComponent struct {
 	ID           uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
 	ComponentID  uint64 `json:"componentId,omitempty,string" gorm:"comment:'组件ID'"`
 	LibVersionID uint64 `json:"libVersionId,omitempty,string" gorm:"comment:'物料库版本ID'"`
 }
 
-func (m *MaterialComponentVersion) TableComment() string {
+func (m *MaterialVersionComponent) TableComment() string {
 	return "物料库组件版本表"
 }
 
-func (m *MaterialComponentVersion) UnmarshalJSON(b []byte) error {
+func (m *MaterialVersionComponent) UnmarshalJSON(b []byte) error {
 	j := gjson.ParseBytes(b)
 	m.ID = j.Get("id").Uint()
 	m.ComponentID = j.Get("componentId").Uint()

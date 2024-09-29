@@ -77,6 +77,11 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 	case constant.InjectCodeProjectMaterialLibVersionList:
 		return wrapCall(value, ProjectMaterialLibVersionController.List)
 
+	case constant.InjectCodeMaterialVersionComponentAdd:
+		return wrapCall(value, MaterialComponentController.VersionAdd)
+	case constant.InjectCodeMaterialVersionComponentDelete:
+		return wrapCall(value, MaterialComponentController.VersionDelete)
+
 	case constant.InjectCodeIndexHtml:
 		return wrapHtmlCall(value, HtmlRenderController.Index)
 	case constant.InjectCodeCanvasHtml:

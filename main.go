@@ -11,6 +11,7 @@ import (
 	"github.com/yockii/ruomu-ui/controller"
 	"github.com/yockii/ruomu-ui/model"
 	"os"
+	"runtime"
 )
 
 type UiCore struct {
@@ -32,7 +33,7 @@ func (UiCore) Initial(params map[string]string) error {
 		&model.MaterialLibVersion{},
 		&model.MaterialComponent{},
 		&model.MaterialComponentGroup{},
-		&model.MaterialComponentVersion{},
+		&model.MaterialVersionComponent{},
 		&model.ProjectMaterialLibVersion{},
 	)
 
@@ -83,13 +84,19 @@ func registerModule() {
 	m := &moduleModel.Module{
 		Name: constant.ModuleName,
 	}
+
+	cmd := "./plugins/ruomu-ui --mc"
+	if runtime.GOOS == "windows" {
+		cmd = "./plugins/ruomu-ui.exe --mc"
+	}
+
 	database.DB.Where(&moduleModel.Module{
 		Code: constant.ModuleCode,
 	}).Attrs(&moduleModel.Module{
 		ID:     util.SnowflakeId(),
 		Name:   constant.ModuleName,
 		Code:   constant.ModuleCode,
-		Cmd:    "./plugins/ruomu-ui --mc",
+		Cmd:    cmd,
 		Status: 1,
 	}).FirstOrCreate(m)
 
@@ -370,6 +377,22 @@ func registerModule() {
 				Type:              1,
 				InjectCode:        constant.InjectCodeProjectMaterialLibVersionList,
 				AuthorizationCode: "projectMaterialLibVersion:list",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "添加物料版本与组件关联关系",
+				Type:              2,
+				InjectCode:        constant.InjectCodeMaterialVersionComponentAdd,
+				AuthorizationCode: "MaterialVersionComponent:add",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "删除物料版本与组件关联关系",
+				Type:              3,
+				InjectCode:        constant.InjectCodeMaterialVersionComponentDelete,
+				AuthorizationCode: "MaterialVersionComponent:delete",
 			},
 		}
 
