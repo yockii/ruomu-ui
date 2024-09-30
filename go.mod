@@ -2,31 +2,25 @@ module github.com/yockii/ruomu-ui
 
 go 1.23.0
 
-replace github.com/yockii/ruomu-core => /home/yockii/Projects/github.com/yockii/ruomu-core
-
 require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/tidwall/gjson v1.17.3
 	github.com/yockii/ruomu-core v0.1.5
-	github.com/yockii/ruomu-module v0.1.6
+	github.com/yockii/ruomu-module v0.1.7
 	gorm.io/gorm v1.25.12
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/gofiber/contrib/jwt v1.0.10 // indirect
 	github.com/gofiber/fiber/v2 v2.52.5 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/template/html/v2 v2.1.2 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-plugin v1.6.1 // indirect
