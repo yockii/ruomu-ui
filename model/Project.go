@@ -29,11 +29,12 @@ func (p *Project) UnmarshalJSON(b []byte) error {
 }
 
 type ProjectFrontend struct {
-	ID        uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
-	StoreJson string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
-	JsJson    string `json:"-" gorm:"text;comment:'js代码'"`
-	CssJson   string `json:"-" gorm:"text;comment:'css代码'"`
-	ApiJson   string `json:"-" gorm:"text;comment:'api代码'"`
+	ID             uint64 `json:"id,omitempty,string" gorm:"primaryKey;autoIncrement:false"`
+	StoreJson      string `json:"-" gorm:"text;comment:'项目级别的变量json'"`
+	JsJson         string `json:"-" gorm:"text;comment:'js代码'"`
+	CssJson        string `json:"-" gorm:"text;comment:'css代码'"`
+	ApiJson        string `json:"-" gorm:"text;comment:'api代码'"`
+	RouteGuardJson string `json:"-" gorm:"text;comment:'路由守卫'"`
 }
 
 func (p *ProjectFrontend) TableComment() string {
@@ -47,6 +48,7 @@ func (p *ProjectFrontend) UnmarshalJSON(b []byte) error {
 	p.JsJson = j.Get("js").String()
 	p.CssJson = j.Get("css").String()
 	p.ApiJson = j.Get("api").String()
+	p.RouteGuardJson = j.Get("routeGuard").String()
 
 	return nil
 }

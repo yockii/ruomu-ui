@@ -106,10 +106,11 @@ func (_ *projectController) UpdateFrontend(value []byte) (any, error) {
 		}
 	} else {
 		if err := database.DB.Model(&model.ProjectFrontend{ID: instance.ID}).Updates(&model.ProjectFrontend{
-			ApiJson:   instance.ApiJson,
-			CssJson:   instance.CssJson,
-			JsJson:    instance.JsJson,
-			StoreJson: instance.StoreJson,
+			ApiJson:        instance.ApiJson,
+			CssJson:        instance.CssJson,
+			JsJson:         instance.JsJson,
+			StoreJson:      instance.StoreJson,
+			RouteGuardJson: instance.RouteGuardJson,
 		}).Error; err != nil {
 			logger.Errorln(err)
 			return &server.CommonResponse{
@@ -296,6 +297,11 @@ func (_ *projectController) Instance(value []byte) (any, error) {
 	//}
 	if pf.ApiJson != "" {
 		if err := json.Unmarshal([]byte(pf.ApiJson), &result.Api); err != nil {
+			logger.Errorln(err)
+		}
+	}
+	if pf.RouteGuardJson != "" {
+		if err := json.Unmarshal([]byte(pf.RouteGuardJson), &result.RouteGuard); err != nil {
 			logger.Errorln(err)
 		}
 	}
