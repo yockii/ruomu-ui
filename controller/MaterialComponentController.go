@@ -59,6 +59,18 @@ func (_ *materialComponentController) Add(value []byte) (any, error) {
 			Msg:  server.ResponseMsgDatabase + err.Error(),
 		}, nil
 	}
+
+	// 尝试解析libVersionId
+	libVersionId := gjson.GetBytes(value, "libVersionId").Uint()
+	if libVersionId > 0 {
+		libVersion := new(model.MaterialVersionComponent)
+		if err := database.DB.Where(&model.MaterialVersionComponent{ComponentID: instance.ID, LibVersionID: libVersionId}).Attrs(&model.MaterialVersionComponent{
+			ID: util.SnowflakeId(),
+		}).FirstOrCreate(libVersion); err != nil {
+			logger.Errorln(err)
+		}
+	}
+
 	return &server.CommonResponse{
 		Data: instance,
 	}, nil
