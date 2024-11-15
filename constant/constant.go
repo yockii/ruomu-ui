@@ -29,6 +29,8 @@ const (
 	InjectCodeMaterialLibVersionDelete   = "/materialLibVersion/delete"
 	InjectCodeMaterialLibVersionList     = "/materialLibVersion/list"
 	InjectCodeMaterialLibVersionInstance = "/materialLibVersion/instance"
+	InjectCodeMaterialLibVersionExport   = "/materialLibVersion/export"
+	InjectCodeMaterialLibVersionImport   = "/materialLibVersion/import"
 
 	InjectCodeMaterialComponentGroupAdd      = "/materialComponentGroup/add"
 	InjectCodeMaterialComponentGroupUpdate   = "/materialComponentGroup/update"

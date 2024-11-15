@@ -56,6 +56,10 @@ func Dispatch(code string, headers map[string][]string, value []byte) ([]byte, e
 		return wrapCall(value, MaterialLibVersionController.Instance)
 	case constant.InjectCodeMaterialLibVersionList:
 		return wrapCall(value, MaterialLibVersionController.List)
+	case constant.InjectCodeMaterialLibVersionImport:
+		return wrapCall(value, MaterialLibVersionController.Import)
+	case constant.InjectCodeMaterialLibVersionExport:
+		return wrapCall(value, MaterialLibVersionController.Export)
 
 	case constant.InjectCodeMaterialComponentGroupAdd:
 		return wrapCall(value, MaterialComponentGroupController.Add)

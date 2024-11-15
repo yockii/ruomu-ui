@@ -309,6 +309,22 @@ func registerModule() {
 			{
 				ID:                util.SnowflakeId(),
 				ModuleID:          m.ID,
+				Name:              "组件库版本导入",
+				Type:              2,
+				InjectCode:        constant.InjectCodeMaterialLibVersionImport,
+				AuthorizationCode: "materialLibVersion:import",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
+				Name:              "组件库版本导出",
+				Type:              1,
+				InjectCode:        constant.InjectCodeMaterialLibVersionExport,
+				AuthorizationCode: "materialLibVersion:export",
+			},
+			{
+				ID:                util.SnowflakeId(),
+				ModuleID:          m.ID,
 				Name:              "新增组件库分组",
 				Type:              2,
 				InjectCode:        constant.InjectCodeMaterialComponentGroupAdd,

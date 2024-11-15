@@ -9,6 +9,7 @@ import (
 	"github.com/yockii/ruomu-core/server"
 	"github.com/yockii/ruomu-core/util"
 	"github.com/yockii/ruomu-ui/domain"
+	"github.com/yockii/ruomu-ui/uiutil"
 	"gorm.io/gorm"
 
 	"github.com/yockii/ruomu-ui/model"
@@ -203,4 +204,219 @@ func (_ *materialLibVersionController) Instance(value []byte) (any, error) {
 	return &server.CommonResponse{
 		Data: instance,
 	}, nil
+}
+
+func (_ *materialLibVersionController) Export(value []byte) (any, error) {
+	instance := new(model.MaterialLibVersion)
+	if err := json.Unmarshal(value, instance); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+	if err := database.DB.Where(instance).Take(instance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &server.CommonResponse{}, nil
+		}
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+
+	lib := new(model.MaterialLib)
+	if err := database.DB.Where(&model.MaterialLib{ID: instance.LibID}).Take(lib).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+	exportResult := new(domain.MaterialLibVersionImportExport)
+	exportResult.Lib = lib
+	exportResult.Version = instance
+
+	if err := database.DB.Where(&model.MaterialComponentGroup{LibID: instance.LibID}).Find(&exportResult.Groups).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+
+	if err := database.DB.Where(&model.MaterialComponent{LibID: instance.LibID}).Find(&exportResult.Components).Error; err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeDatabase,
+			Msg:  server.ResponseMsgDatabase + err.Error(),
+		}, nil
+	}
+
+	// 将结果转换为JSON
+	jsonData, err := json.Marshal(exportResult)
+	if err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeGeneration,
+			Msg:  server.ResponseMsgGeneration + err.Error(),
+		}, nil
+	}
+	result, err := uiutil.CompressBytes(jsonData)
+	if err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeGeneration,
+			Msg:  server.ResponseMsgGeneration + err.Error(),
+		}, nil
+	}
+	return &server.CommonResponse{
+		Data: result,
+	}, nil
+}
+
+func (_ *materialLibVersionController) Import(value []byte) (any, error) {
+	decompressed, err := uiutil.DecompressBytes(value)
+	if err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError + err.Error(),
+		}, nil
+	}
+	if len(decompressed) == 0 {
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError,
+		}, nil
+	}
+	importRes := new(domain.MaterialLibVersionImportExport)
+	if err := json.Unmarshal(decompressed, importRes); err != nil {
+		logger.Errorln(err)
+		return &server.CommonResponse{
+			Code: server.ResponseCodeParamParseError,
+			Msg:  server.ResponseMsgParamParseError + err.Error(),
+		}, nil
+	}
+	importLib := importRes.Lib
+	libInstance := new(model.MaterialLib)
+	libInstance.Code = importLib.Code
+	// 检查是否存在
+	if err := database.DB.Where(libInstance).Take(libInstance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 不存在就新增
+			importLib.ID = util.SnowflakeId()
+			if err := database.DB.Create(importLib).Error; err != nil {
+				logger.Errorln(err)
+				return &server.CommonResponse{
+					Code: server.ResponseCodeDatabase,
+					Msg:  server.ResponseMsgDatabase + err.Error(),
+				}, nil
+			}
+		} else {
+			logger.Errorln(err)
+			return &server.CommonResponse{
+				Code: server.ResponseCodeDatabase,
+				Msg:  server.ResponseMsgDatabase + err.Error(),
+			}, nil
+		}
+	} else {
+		// 则将得到的libInstance的ID赋值给importLib
+		importLib.ID = libInstance.ID
+	}
+	// 检查version是否存在
+	versionInstance := new(model.MaterialLibVersion)
+	versionInstance.LibID = importLib.ID
+	versionInstance.Version = importRes.Version.Version
+	if err := database.DB.Where(versionInstance).Take(versionInstance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 不存在就新增
+			importRes.Version.ID = util.SnowflakeId()
+			if err := database.DB.Create(importRes.Version).Error; err != nil {
+				logger.Errorln(err)
+				return &server.CommonResponse{
+					Code: server.ResponseCodeDatabase,
+					Msg:  server.ResponseMsgDatabase + err.Error(),
+				}, nil
+			}
+		} else {
+			logger.Errorln(err)
+			return &server.CommonResponse{
+				Code: server.ResponseCodeDatabase,
+				Msg:  server.ResponseMsgDatabase + err.Error(),
+			}, nil
+		}
+	} else {
+		importRes.Version.ID = versionInstance.ID
+	}
+
+	groupOldIdWithNewId := make(map[uint64]uint64)
+	for _, group := range importRes.Groups {
+		oldID := group.ID
+		groupInstance := &model.MaterialComponentGroup{
+			LibID: importLib.ID,
+			Name:  group.Name,
+		}
+		if err := database.DB.Where(groupInstance).Take(groupInstance).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				group.ID = util.SnowflakeId()
+				if err := database.DB.Create(group).Error; err != nil {
+					logger.Errorln(err)
+					return &server.CommonResponse{
+						Code: server.ResponseCodeDatabase,
+						Msg:  server.ResponseMsgDatabase + err.Error(),
+					}, nil
+				}
+				groupOldIdWithNewId[oldID] = group.ID
+			} else {
+				logger.Errorln(err)
+				return &server.CommonResponse{
+					Code: server.ResponseCodeDatabase,
+					Msg:  server.ResponseMsgDatabase + err.Error(),
+				}, nil
+			}
+		} else {
+			group.ID = groupInstance.ID
+			groupOldIdWithNewId[oldID] = group.ID
+		}
+	}
+	for _, component := range importRes.Components {
+		componentInstance := &model.MaterialComponent{
+			LibID:   importLib.ID,
+			TagName: component.TagName,
+		}
+		if err := database.DB.Where(componentInstance).Take(componentInstance).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				component.ID = util.SnowflakeId()
+				component.GroupID = groupOldIdWithNewId[component.GroupID]
+				if err := database.DB.Create(component).Error; err != nil {
+					logger.Errorln(err)
+					return &server.CommonResponse{
+						Code: server.ResponseCodeDatabase,
+						Msg:  server.ResponseMsgDatabase + err.Error(),
+					}, nil
+				}
+			} else {
+				logger.Errorln(err)
+				return &server.CommonResponse{
+					Code: server.ResponseCodeDatabase,
+					Msg:  server.ResponseMsgDatabase + err.Error(),
+				}, nil
+			}
+		} else {
+			// 更新
+			component.ID = componentInstance.ID
+			component.GroupID = groupOldIdWithNewId[component.GroupID]
+			if err := database.DB.Model(componentInstance).Updates(component).Error; err != nil {
+				logger.Errorln(err)
+				return &server.CommonResponse{
+					Code: server.ResponseCodeDatabase,
+					Msg:  server.ResponseMsgDatabase + err.Error(),
+				}, nil
+			}
+		}
+	}
+
+	return &server.CommonResponse{}, nil
 }
