@@ -170,6 +170,9 @@ func (_ *materialLibController) List(value []byte) (any, error) {
 		tx.Where("package_name like ?", "%"+instance.PackageName+"%")
 		instance.PackageName = ""
 	}
+	if instance.ProjectID != 0 {
+		tx.Where("id in (?)", database.DB.Select("lib_id").Model(&model.ProjectMaterialLibVersion{}).Where(&model.ProjectMaterialLibVersion{ProjectID: instance.ProjectID}))
+	}
 
 	var list []*model.MaterialLib
 	var total int64

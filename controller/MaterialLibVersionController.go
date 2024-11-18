@@ -418,5 +418,7 @@ func (_ *materialLibVersionController) Import(value []byte) (any, error) {
 		}
 	}
 
-	return &server.CommonResponse{}, nil
+	return &server.CommonResponse{
+		Data: true,
+	}, nil
 }
